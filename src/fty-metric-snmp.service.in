@@ -1,0 +1,11 @@
+[Unit]
+Description=fty-metric-snmp service
+After=network.target
+
+[Service]
+Type=simple
+Environment="prefix=@prefix@"
+ExecStart=@prefix@/bin/fty-metric-snmp @sysconfdir@/@PACKAGE@/fty-metric-snmp.cfg
+
+[Install]
+WantedBy=multi-user.target
