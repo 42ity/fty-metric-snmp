@@ -18,6 +18,7 @@ include_HEADERS = \
     include/fty_metric_snmp_library.h
 
 src_libfty_metric_snmp_la_SOURCES = \
+    src/luasnmp.c \
     src/fty_metric_snmp_server.c \
     src/platform.h
 

@@ -28,6 +28,7 @@
     <use project = "cxxtools"
          test    = "cxxtools::Utf8Codec::Utf8Codec" />
 
+    <class name = "luasnmp" private = "1">lua snmp extension</class>
     <class name = "fty_metric_snmp_server" state = "stable">Actor</class>
 
     <main name = "fty-metric-snmp" service = "1" />

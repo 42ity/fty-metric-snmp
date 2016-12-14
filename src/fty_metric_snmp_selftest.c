@@ -94,13 +94,14 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("1");
+            puts ("2");
             return 0;
         }
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
+            puts ("    luasnmp");
             puts ("    fty_metric_snmp_server");
             return 0;
         }

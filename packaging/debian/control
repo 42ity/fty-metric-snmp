@@ -31,7 +31,6 @@ Build-Depends: debhelper (>= 9),
     libfty-proto-dev,
     liblua5.1-0-dev,
     libcxxtools-dev,
-# necessary for systemd.pc to get unit install path
     systemd,
     dh-systemd,
 Build-Depends-Indep: asciidoc,
@@ -40,7 +39,7 @@ Build-Depends-Indep: asciidoc,
 Package: libfty-metric-snmp0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: poc 'snmp-get' server reading. shared library
+Description: fty-metric-snmp
  This package contains shared library for fty-metric-snmp: poc 'snmp-get' server reading.
 
 Package: libfty-metric-snmp-dev
@@ -54,7 +53,7 @@ Depends:
     liblua5.1-0-dev,
     libcxxtools-dev,
     libfty-metric-snmp0 (= ${binary:Version})
-Description: poc 'snmp-get' server reading. development tools
+Description: development files for fty-metric-snmp
  This package contains development files for fty-metric-snmp: poc 'snmp-get' server reading.
 
 Package: fty-metric-snmp
@@ -70,6 +69,6 @@ Priority: extra
 Depends:
     fty-metric-snmp (= ${binary:Version}),
     ${misc:Depends}
-Description: poc 'snmp-get' server reading. debugging symbols
+Description: debugging symbols for fty-metric-snmp
  This package contains the debugging symbols for fty-metric-snmp : poc 'snmp-get' server reading..
 

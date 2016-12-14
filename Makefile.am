@@ -40,6 +40,7 @@ EXTRA_DIST = \
     Findftyproto.cmake \
     Findlua.cmake \
     Findcxxtools.cmake \
+    src/luasnmp.h \
     LICENSE \
     README.md \
     src/fty_metric_snmp_classes.h

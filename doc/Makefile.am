@@ -35,7 +35,7 @@ $(builddir)/fty-metric-snmp.txt: $(srcdir)/fty-metric-snmp.txt
 
 .txt.xml:
 	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
-        -afty-metric-snmp_version=@PACKAGE_VERSION@ -o$@ $<
+        -afty_metric_snmp_version=@PACKAGE_VERSION@ -o$@ $<
 .xml.1:
 	xmlto man $<
 .xml.3:
