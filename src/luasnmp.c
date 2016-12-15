@@ -144,19 +144,47 @@ static int snmp_get(lua_State *L)
     }
 }
 
+static int snmp_getnext(lua_State *L)
+{
+	char* host = lua_tostring(L, 1);
+	char* oid = lua_tostring(L, 2);
+    char *nextoid, *nextvalue;
+    snmp_getnext_v12 (host, oid, "public", SNMP_VERSION_1, &nextoid, &nextvalue);
+    if (nextoid && nextvalue) {
+        lua_pushstring (L, nextoid);
+        lua_pushstring (L, nextvalue);
+        free (nextoid);
+        free (nextvalue);
+        return 2;
+    } else {
+        if (nextoid) free (nextoid);
+        if (nextvalue) free (nextvalue);
+        return 0;
+    }
+}
+
+
 void extend_lua_of_snmp(lua_State *L)
 {
     lua_register (L, "snmp_get", snmp_get);
-    //TODO: lua_register (L, "snmp_getnext", snmp_getnext);
+    lua_register (L, "snmp_getnext", snmp_getnext);
 }
 
 int main()
 {
     luasnmp_init ();
-    char *value = snmp_get_v12 ("10.130.53.36", ".1.3.6.1.2.1.1.1.0", "public", SNMP_VERSION_1);
-    printf("value: %s\n", value ? value : "null");
-    free (value);
-
+    {
+        char *value = snmp_get_v12 ("10.130.53.36", ".1.3.6.1.2.1.1.1.0", "public", SNMP_VERSION_1);
+        printf("get value: %s\n", value ? value : "null");
+        free (value);
+    }
+    {
+        char *value, *oid;
+        snmp_getnext_v12 ("10.130.53.36", ".1", "public", SNMP_VERSION_1, &oid, &value);
+        printf("getnext oid: %s value: %s\n", oid ? oid : "null", value ? value : "null");
+        if (value) free (value);
+        if (oid) free (oid);
+    }
     // lua snmp test
 #if LUA_VERSION_NUM > 501
     lua_State *l = luaL_newstate();   
@@ -166,10 +194,25 @@ int main()
     luaL_openlibs(l); // get functions like print();
     extend_lua_of_snmp (l); //extend of snmp
     luaL_dostring (l, "function main(host) print (snmp_get (host,'.1.3.6.1.2.1.1.1.0')) end");
+    luaL_dostring (l,
+                   "function walk(host) "
+                   "    oid = '.1' "
+                   "    for i=1,10,1 do "
+                   "        oid, value = snmp_getnext(host, oid) "
+                   "        print (oid .. ' : ' .. value) "
+                   "    end "
+                   "end "
+    );
     lua_settop (l, 0);
     lua_getglobal (l, "main");
     lua_pushstring (l, "10.130.53.36");
     lua_pcall (l, 1, 1, 0);
+
+    lua_settop (l, 0);
+    lua_getglobal (l, "walk");
+    lua_pushstring (l, "10.130.53.36");
+    lua_pcall (l, 1, 1, 0);
+
     lua_close (l);
     return 0;
 }
