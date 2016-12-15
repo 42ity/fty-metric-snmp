@@ -1,5 +1,5 @@
 /*  =========================================================================
-    luasnmp - lua snmp extension
+    credentials - list of snmp credentials
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -19,21 +19,40 @@
     =========================================================================
 */
 
-#ifndef LUASNMP_H_INCLUDED
-#define LUASNMP_H_INCLUDED
+#ifndef CREDENTIALS_H_INCLUDED
+#define CREDENTIALS_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct _credentials_t credentials_t;
+
+typedef struct _snmp_credentials_t {
+    int version;
+    char *community;
+} snmp_credentials_t;
+
+
+
 //  @interface
-//  Create a new luasnmp
-FTY_METRIC_SNMP_EXPORT lua_State *
-    luasnmp_new (void);
+//  Create a new credentials
+FTY_METRIC_SNMP_EXPORT credentials_t *
+    credentials_new (void);
+
+//  Destroy the credentials
+FTY_METRIC_SNMP_EXPORT void
+    credentials_destroy (credentials_t **self_p);
+
+void
+credentials_set (credentials_t *self, const char *host, int version, const char*community);
+
+const snmp_credentials_t*
+credentials_get (credentials_t *self, const char *host);
 
 //  Self test of this class
 FTY_METRIC_SNMP_EXPORT void
-    luasnmp_test (bool verbose);
+    credentials_test (bool verbose);
 
 //  @end
 

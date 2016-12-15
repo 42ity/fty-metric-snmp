@@ -34,7 +34,6 @@
 #include <malamute.h>
 #include <fty_proto.h>
 #include <lua.h>
-#include <cxxtools.h>
 
 //  FTY_METRIC_SNMP version macros for compile-time API detection
 #define FTY_METRIC_SNMP_VERSION_MAJOR 0

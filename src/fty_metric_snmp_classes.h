@@ -34,6 +34,7 @@
 
 //  Internal API
 #include "luasnmp.h"
+#include "credentials.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
 #ifndef FTY_METRIC_SNMP_BUILD_DRAFT_API
@@ -42,6 +43,11 @@
 //  Self test of this class.
 FTY_METRIC_SNMP_PRIVATE void
     luasnmp_test (bool verbose);
+
+//  *** Draft method, defined for internal use only ***
+//  Self test of this class.
+FTY_METRIC_SNMP_PRIVATE void
+    credentials_test (bool verbose);
 
 #endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 

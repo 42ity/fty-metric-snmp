@@ -1,3 +1,23 @@
+/*  =========================================================================
+    luasnmp - lua snmp extension
+
+    Copyright (C) 2014 - 2015 Eaton                                        
+                                                                           
+    This program is free software; you can redistribute it and/or modify   
+    it under the terms of the GNU General Public License as published by   
+    the Free Software Foundation; either version 2 of the License, or      
+    (at your option) any later version.                                    
+                                                                           
+    This program is distributed in the hope that it will be useful,        
+    but WITHOUT ANY WARRANTY; without even the implied warranty of         
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
+    GNU General Public License for more details.                           
+                                                                           
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    =========================================================================
+*/
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -170,49 +190,21 @@ void extend_lua_of_snmp(lua_State *L)
     lua_register (L, "snmp_getnext", snmp_getnext);
 }
 
-int main()
+lua_State *luasnmp_new (void)
 {
-    luasnmp_init ();
-    {
-        char *value = snmp_get_v12 ("10.130.53.36", ".1.3.6.1.2.1.1.1.0", "public", SNMP_VERSION_1);
-        printf("get value: %s\n", value ? value : "null");
-        free (value);
-    }
-    {
-        char *value, *oid;
-        snmp_getnext_v12 ("10.130.53.36", ".1", "public", SNMP_VERSION_1, &oid, &value);
-        printf("getnext oid: %s value: %s\n", oid ? oid : "null", value ? value : "null");
-        if (value) free (value);
-        if (oid) free (oid);
-    }
-    // lua snmp test
 #if LUA_VERSION_NUM > 501
     lua_State *l = luaL_newstate();   
 #else
     lua_State *l = lua_open();
 #endif
+    if (!l) return NULL;
     luaL_openlibs(l); // get functions like print();
     extend_lua_of_snmp (l); //extend of snmp
-    luaL_dostring (l, "function main(host) print (snmp_get (host,'.1.3.6.1.2.1.1.1.0')) end");
-    luaL_dostring (l,
-                   "function walk(host) "
-                   "    oid = '.1' "
-                   "    for i=1,10,1 do "
-                   "        oid, value = snmp_getnext(host, oid) "
-                   "        print (oid .. ' : ' .. value) "
-                   "    end "
-                   "end "
-    );
-    lua_settop (l, 0);
-    lua_getglobal (l, "main");
-    lua_pushstring (l, "10.130.53.36");
-    lua_pcall (l, 1, 1, 0);
-
-    lua_settop (l, 0);
-    lua_getglobal (l, "walk");
-    lua_pushstring (l, "10.130.53.36");
-    lua_pcall (l, 1, 1, 0);
-
-    lua_close (l);
-    return 0;
+    return l;
 }
+
+void luasnmp_test (bool verbose)
+{
+    //@ test is empty 
+}
+

@@ -41,6 +41,7 @@ EXTRA_DIST = \
     Findlua.cmake \
     Findcxxtools.cmake \
     src/luasnmp.h \
+    src/credentials.h \
     LICENSE \
     README.md \
     src/fty_metric_snmp_classes.h
