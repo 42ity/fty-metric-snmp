@@ -152,9 +152,24 @@ static int snmp_get(lua_State *L)
 {
 	char* host = lua_tostring(L, 1);
 	char* oid = lua_tostring(L, 2);
-    //printf ("lua is calling %s %s\n", host, oid);
-    //TODO: get credentials/snmpversion for host
-    char *result = snmp_get_v12 (host, oid, "public", SNMP_VERSION_1);
+
+    if (!host || !oid ) {
+        return 0;
+    }
+    
+    // get credentials/snmpversion for host
+    lua_getglobal(L, "SNMP_VERSION");
+    int version = 0;
+    char *versionstr = lua_tostring (L, -1);
+    if (versionstr) version = atoi (versionstr);
+    
+    lua_getglobal(L, "SNMP_COMMUNITY_NAME");
+    char *community = lua_tostring (L, -1);
+    if (! community || !version) {
+        return 0;
+    }
+    
+    char *result = snmp_get_v12 (host, oid, community, version);
     if (result) {
         lua_pushstring (L, result);
         free (result);
@@ -168,8 +183,24 @@ static int snmp_getnext(lua_State *L)
 {
 	char* host = lua_tostring(L, 1);
 	char* oid = lua_tostring(L, 2);
+    if (!host || !oid ) {
+        return 0;
+    }
+    
+    // get credentials/snmpversion for host
+    lua_getglobal(L, "SNMP_VERSION");
+    int version = 0;
+    char *versionstr = lua_tostring (L, -1);
+    if (versionstr) version = atoi (versionstr);
+    
+    lua_getglobal(L, "SNMP_COMMUNITY_NAME");
+    char *community = lua_tostring (L, -1);
+    if (! community || !version) {
+        return 0;
+    }
+    
     char *nextoid, *nextvalue;
-    snmp_getnext_v12 (host, oid, "public", SNMP_VERSION_1, &nextoid, &nextvalue);
+    snmp_getnext_v12 (host, oid, community, version, &nextoid, &nextvalue);
     if (nextoid && nextvalue) {
         lua_pushstring (L, nextoid);
         lua_pushstring (L, nextvalue);
