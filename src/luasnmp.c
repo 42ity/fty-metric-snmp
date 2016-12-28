@@ -22,7 +22,7 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
-#define DISABLE_MIB_LOADING 1
+//#define DISABLE_MIB_LOADING 1
 
 
 //#include <net-snmp/library/oid.h>
@@ -232,6 +232,13 @@ lua_State *luasnmp_new (void)
     luaL_openlibs(l); // get functions like print();
     extend_lua_of_snmp (l); //extend of snmp
     return l;
+}
+
+void luasnmp_destroy (lua_State **self_p)
+{
+    if (!self_p || !*self_p) return;
+    lua_close (*self_p);
+    *self_p = NULL;
 }
 
 void luasnmp_test (bool verbose)
