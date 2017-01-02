@@ -1,0 +1,18 @@
+{
+"name" : "linuxload",
+"description" : "Linux 1 min, 5 min and 15 min load.",
+"assets" : [],
+"groups" : ["linuxserver"],
+"evaluation" : "
+function main (host)
+    load1m = snmp_get (host, '.1.3.6.1.4.1.2021.10.1.3.1');
+    load5m = snmp_get (host, '.1.3.6.1.4.1.2021.10.1.3.2');
+    load15m = snmp_get (host, '.1.3.6.1.4.1.2021.10.1.3.3');
+    return {
+        'load', load1m, '%',
+        'load5m', load5m, '%',
+        'load15m', load15m, '%'
+    }
+end
+"
+}
