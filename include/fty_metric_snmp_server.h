@@ -39,6 +39,10 @@ FTY_METRIC_SNMP_EXPORT void
 FTY_METRIC_SNMP_EXPORT void
     fty_metric_snmp_server_test (bool verbose);
 
+//  Server main actor
+FTY_METRIC_SNMP_EXPORT void
+    fty_metric_snmp_server_actor (zsock_t *pipe, void *args);
+
 //  @end
 
 #ifdef __cplusplus

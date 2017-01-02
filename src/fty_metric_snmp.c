@@ -49,8 +49,16 @@ int main (int argc, char *argv [])
             return 1;
         }
     }
-    //  Insert main code here
     if (verbose)
-        zsys_info ("fty_metric_snmp - ");
+        zsys_info ("fty_metric_snmp - started");
+    zactor_t *server = zactor_new (fty_metric_snmp_server_actor, NULL);
+    assert (server);
+    while (!zsys_interrupted) {
+        zmsg_t *msg = zactor_recv (server);
+        zmsg_destroy (&msg);
+    }
+    zactor_destroy (&server);
+    if (verbose)
+        zsys_info ("fty_metric_snmp - exited");
     return 0;
 }

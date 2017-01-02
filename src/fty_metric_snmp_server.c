@@ -65,6 +65,37 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
 }
 
 //  --------------------------------------------------------------------------
+//  Destroy the fty_metric_snmp_server
+
+void
+fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
+{
+    zpoller_t *poller = zpoller_new (pipe, NULL);
+
+    zsock_signal (pipe, 0);
+    while (!zsys_interrupted) {
+        zsock_t *which = (zsock_t *)zpoller_wait(poller, 30);
+        if (which == pipe) {
+            zmsg_t *msg = zmsg_recv (pipe);
+            if (msg) {
+                char *cmd = zmsg_popstr (msg);
+                if (cmd) {
+                    if (streq (cmd, "$TERM")) {
+                        zstr_free (&cmd);
+                        zmsg_destroy (&msg);
+                        break;
+                    }
+                }
+                zstr_free (&cmd);
+            }
+        }
+    }
+    
+    zpoller_destroy (&poller);
+}
+
+
+//  --------------------------------------------------------------------------
 //  Self test of this class
 
 void
