@@ -65,13 +65,13 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
 }
 
 //  --------------------------------------------------------------------------
-//  Destroy the fty_metric_snmp_server
+//  Main fty_metric_snmp_server actor
 
 void
 fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
 {
     zpoller_t *poller = zpoller_new (pipe, NULL);
-
+    
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
         zsock_t *which = (zsock_t *)zpoller_wait(poller, 30);
@@ -85,8 +85,9 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         zmsg_destroy (&msg);
                         break;
                     }
+                    zstr_free (&cmd);
                 }
-                zstr_free (&cmd);
+                zmsg_free (msg);
             }
         }
     }
