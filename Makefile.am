@@ -18,10 +18,10 @@ AM_CPPFLAGS = \
     ${malamute_CFLAGS} \
     ${ftyproto_CFLAGS} \
     ${lua_CFLAGS} \
-    ${cxxtools_CFLAGS} \
+    ${netsnmp_CFLAGS} \
     -I$(srcdir)/include
 
-project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${ftyproto_LIBS} ${lua_LIBS} ${cxxtools_LIBS}
+project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${ftyproto_LIBS} ${lua_LIBS} ${netsnmp_LIBS}
 
 SUBDIRS = doc
 DIST_SUBDIRS = doc
@@ -39,7 +39,7 @@ EXTRA_DIST = \
     Findmalamute.cmake \
     Findftyproto.cmake \
     Findlua.cmake \
-    Findcxxtools.cmake \
+    Findnetsnmp.cmake \
     src/luasnmp.h \
     src/credentials.h \
     LICENSE \

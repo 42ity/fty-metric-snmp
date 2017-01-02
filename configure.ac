@@ -214,51 +214,51 @@ if test "x$was_lua_check_lib_detected" = "xno"; then
     LIBS="${lua_LIBS} ${LIBS}"
 fi
 
-was_cxxtools_check_lib_detected=no
+was_netsnmp_check_lib_detected=no
 
-PKG_CHECK_MODULES([cxxtools], [cxxtools >= 0.0.0],
+PKG_CHECK_MODULES([netsnmp], [netsnmp >= 0.0.0],
     [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $cxxtools_LIBS"
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $netsnmp_LIBS"
     ],
     [
-        AC_ARG_WITH([cxxtools],
+        AC_ARG_WITH([netsnmp],
             [
-                AS_HELP_STRING([--with-cxxtools],
-                [Specify cxxtools prefix])
+                AS_HELP_STRING([--with-netsnmp],
+                [Specify netsnmp prefix])
             ],
-            [search_cxxtools="yes"],
+            [search_netsnmp="yes"],
             [])
 
-        cxxtools_synthetic_cflags=""
-        cxxtools_synthetic_libs="-lcxxtools"
+        netsnmp_synthetic_cflags=""
+        netsnmp_synthetic_libs="-lnetsnmp"
 
-        if test "x$search_cxxtools" = "xyes"; then
-            if test -r "${with_cxxtools}/include/cxxtools.h"; then
-                cxxtools_synthetic_cflags="-I${with_cxxtools}/include"
-                cxxtools_synthetic_libs="-L${with_cxxtools}/lib -lcxxtools"
+        if test "x$search_netsnmp" = "xyes"; then
+            if test -r "${with_netsnmp}/include/net-snmp/net-snmp-config.h"; then
+                netsnmp_synthetic_cflags="-I${with_netsnmp}/include"
+                netsnmp_synthetic_libs="-L${with_netsnmp}/lib -lnetsnmp"
             else
-                AC_MSG_ERROR([${with_cxxtools}/include/cxxtools.h not found. Please check cxxtools prefix])
+                AC_MSG_ERROR([${with_netsnmp}/include/net-snmp/net-snmp-config.h not found. Please check netsnmp prefix])
             fi
         fi
 
 
-        AC_CHECK_LIB([cxxtools], [cxxtools::Utf8Codec::Utf8Codec],
+        AC_CHECK_LIB([netsnmp], [init_snmp],
             [
-                CFLAGS="${cxxtools_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${cxxtools_synthetic_libs} ${LDFLAGS}"
-                LIBS="${cxxtools_synthetic_libs} ${LIBS}"
+                CFLAGS="${netsnmp_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${netsnmp_synthetic_libs} ${LDFLAGS}"
+                LIBS="${netsnmp_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([cxxtools_CFLAGS],[${cxxtools_synthetic_cflags}])
-                AC_SUBST([cxxtools_LIBS],[${cxxtools_synthetic_libs}])
-                was_cxxtools_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lcxxtools"
+                AC_SUBST([netsnmp_CFLAGS],[${netsnmp_synthetic_cflags}])
+                AC_SUBST([netsnmp_LIBS],[${netsnmp_synthetic_libs}])
+                was_netsnmp_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lnetsnmp"
             ],
-            [AC_MSG_ERROR([cannot link with -lcxxtools, install cxxtools])])
+            [AC_MSG_ERROR([cannot link with -lnetsnmp, install netsnmp])])
     ])
 
-if test "x$was_cxxtools_check_lib_detected" = "xno"; then
-    CFLAGS="${cxxtools_CFLAGS} ${CFLAGS}"
-    LIBS="${cxxtools_LIBS} ${LIBS}"
+if test "x$was_netsnmp_check_lib_detected" = "xno"; then
+    CFLAGS="${netsnmp_CFLAGS} ${CFLAGS}"
+    LIBS="${netsnmp_LIBS} ${LIBS}"
 fi
 
 CFLAGS="${PREVIOUS_CFLAGS}"

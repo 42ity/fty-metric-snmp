@@ -35,7 +35,7 @@ $(builddir)/fty-metric-snmp.txt: $(srcdir)/fty-metric-snmp.txt
 
 .txt.xml:
 	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
-        -afty_metric_snmp_version=@PACKAGE_VERSION@ -o$@ $<
+        -afty-metric-snmp_version=@PACKAGE_VERSION@ -o$@ $<
 .xml.1:
 	xmlto man $<
 .xml.3:
@@ -53,7 +53,7 @@ fty_metric_snmp_server.txt: $(top_srcdir)/src/fty_metric_snmp_server.c
 	$(srcdir)/mkman fty_metric_snmp_server $(builddir)/fty_metric_snmp_server $(srcdir)/..
 
 GENERATED_DOCS += fty-metric-snmp.txt fty-metric-snmp.doc
-fty-metric-snmp.txt: $(top_srcdir)/src/fty-metric-snmp.c
+fty-metric-snmp.txt: $(top_srcdir)/src/fty_metric_snmp.c
 	$(srcdir)/mkman fty_metric_snmp $(builddir)/fty-metric-snmp $(srcdir)/..
 
 

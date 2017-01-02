@@ -12,7 +12,7 @@ Name: libfty_metric_snmp
 Description: PoC 'snmp-get' server reading.
 Version: @VERSION@
 
-Requires:libzmq libczmq >= 3.0.0 libmlm >= 1.0.0 libfty_proto lua >= 5.1.0 cxxtools
+Requires:libzmq libczmq >= 3.0.0 libmlm >= 1.0.0 libfty_proto lua >= 5.1.0 netsnmp
 
 Libs: -L${libdir} -lfty_metric_snmp
 Cflags: -I${includedir} @pkg_config_defines@
