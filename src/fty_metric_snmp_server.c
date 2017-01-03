@@ -71,7 +71,12 @@ void
 fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
 {
     zpoller_t *poller = zpoller_new (pipe, NULL);
-    
+    // TODO: read list of communities (zconfig)
+    // TODO: connect to malamute
+    // TODO: read rules
+    // TODO: react on asset from stream
+    // TODO: react on metric from host_actor
+    // TODO: send POLL event to host_actors (zloop)?
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
         zsock_t *which = (zsock_t *)zpoller_wait(poller, 30);
