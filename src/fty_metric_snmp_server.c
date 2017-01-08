@@ -87,7 +87,7 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                     }
                     zstr_free (&cmd);
                 }
-                zmsg_free (msg);
+                zmsg_destroy (&msg);
             }
         }
     }

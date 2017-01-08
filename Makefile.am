@@ -41,6 +41,8 @@ EXTRA_DIST = \
     Findlua.cmake \
     Findnetsnmp.cmake \
     src/luasnmp.h \
+    src/rule.h \
+    src/vsjson.h \
     src/credentials.h \
     LICENSE \
     README.md \

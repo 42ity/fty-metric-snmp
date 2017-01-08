@@ -94,7 +94,7 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("3");
+            puts ("5");
             return 0;
         }
         else
@@ -102,6 +102,8 @@ main (int argc, char **argv)
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
             puts ("    luasnmp");
+            puts ("    rule");
+            puts ("    vsjson");
             puts ("    credentials");
             puts ("    fty_metric_snmp_server");
             return 0;

@@ -34,6 +34,8 @@
 
 //  Internal API
 #include "luasnmp.h"
+#include "rule.h"
+#include "vsjson.h"
 #include "credentials.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
@@ -43,6 +45,16 @@
 //  Self test of this class.
 FTY_METRIC_SNMP_PRIVATE void
     luasnmp_test (bool verbose);
+
+//  *** Draft method, defined for internal use only ***
+//  Self test of this class.
+FTY_METRIC_SNMP_PRIVATE void
+    rule_test (bool verbose);
+
+//  *** Draft method, defined for internal use only ***
+//  Self test of this class.
+FTY_METRIC_SNMP_PRIVATE void
+    vsjson_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
