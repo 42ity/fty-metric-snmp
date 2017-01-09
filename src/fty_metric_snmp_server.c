@@ -31,6 +31,8 @@
 //  Structure of our class
 
 struct _fty_metric_snmp_server_t {
+    mlm_client_t *mlm;
+    zlist_t *rules;
     int filler;     //  Declare class properties here
 };
 
@@ -43,7 +45,13 @@ fty_metric_snmp_server_new (void)
 {
     fty_metric_snmp_server_t *self = (fty_metric_snmp_server_t *) zmalloc (sizeof (fty_metric_snmp_server_t));
     assert (self);
-    //  Initialize class properties here
+    
+    self->mlm = mlm_client_new();
+    assert (self->mlm);
+    
+    self->rules = zlist_new();
+    assert (self->rules);
+    zlist_autofree (self->rules);
     return self;
 }
 
@@ -58,6 +66,8 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
     if (*self_p) {
         fty_metric_snmp_server_t *self = *self_p;
         //  Free class properties here
+        mlm_client_destroy (&self->mlm);
+        zlist_destroy (&self->rules);
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -70,6 +80,8 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
 void
 fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
 {
+    fty_metric_snmp_server_t *self = fty_metric_snmp_server_new ();
+    assert (self);
     zpoller_t *poller = zpoller_new (pipe, NULL);
     // TODO: read list of communities (zconfig)
     // TODO: connect to malamute
@@ -90,14 +102,22 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         zmsg_destroy (&msg);
                         break;
                     }
+                    else if (streq (cmd, "BIND")) {
+                        char *endpoint = zmsg_popstr (msg);
+                        char *myname = zmsg_popstr (msg);
+                        assert (endpoint && myname);
+                        mlm_client_connect (self->mlm, endpoint, 5000, myname);
+                        zstr_free (&endpoint);
+                        zstr_free (&myname);
+                    }
                     zstr_free (&cmd);
                 }
                 zmsg_destroy (&msg);
             }
         }
     }
-    
     zpoller_destroy (&poller);
+    fty_metric_snmp_server_destroy (&self);
 }
 
 
