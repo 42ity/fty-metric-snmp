@@ -33,7 +33,7 @@
 struct _fty_metric_snmp_server_t {
     mlm_client_t *mlm;
     zlist_t *rules;
-    int filler;     //  Declare class properties here
+    zhash_t *host_actors;
 };
 
 
@@ -52,6 +52,9 @@ fty_metric_snmp_server_new (void)
     self->rules = zlist_new();
     assert (self->rules);
     zlist_autofree (self->rules);
+
+    self->host_actors = zhash_new();
+    assert (self->host_actors);
     return self;
 }
 
@@ -68,6 +71,7 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
         //  Free class properties here
         mlm_client_destroy (&self->mlm);
         zlist_destroy (&self->rules);
+        zhash_destroy (&self->host_actors);
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -104,6 +108,17 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
     closedir(dir);
 }
 
+zactor_t *
+fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zpoller_t *poller)
+{
+    return NULL;
+}
+
+zactor_t *
+fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zpoller_t *poller)
+{
+    return NULL;
+}
 
 //  --------------------------------------------------------------------------
 //  Main fty_metric_snmp_server actor
@@ -115,8 +130,6 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
     assert (self);
     zpoller_t *poller = zpoller_new (pipe, mlm_client_msgpipe (self->mlm), NULL);
     // TODO: read list of communities (zconfig)
-    // TODO: connect to malamute
-    // TODO: read rules
     // TODO: react on asset from stream
     // TODO: react on metric from host_actor
     // TODO: send POLL event to host_actors (zloop)?
@@ -168,6 +181,23 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
         }
         else if (which == mlm_client_msgpipe (self->mlm)) {
             // got malamute message, probably an asset
+            zmsg_t *msg = zmsg_recv (which); 
+            if (msg && is_fty_proto (msg)) {
+                fty_proto_t *ftymsg = fty_proto_decode (&msg);
+                if (fty_proto_id (ftymsg) == FTY_PROTO_ASSET) {
+                    if (
+                        streq (fty_proto_operation (ftymsg), "update") ||
+                        streq (fty_proto_operation (ftymsg), "create")
+                    ) {
+                        fty_metric_snmp_server_asset_update (self, ftymsg, poller);
+                    }
+                    if (streq (fty_proto_operation (ftymsg), "delete")) {
+                        fty_metric_snmp_server_asset_delete (self, ftymsg, poller);
+                    }
+                }
+                fty_proto_destroy (&ftymsg);
+            }
+            zmsg_destroy (&msg);
         }
         else if (which == NULL) {
             if (!zsys_interrupted) {
