@@ -206,6 +206,27 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
         }
         else {
             // must be host_actor then
+            zmsg_t *msg = zmsg_recv (which);
+            char *cmd = zmsg_popstr (msg);
+            if (cmd && streq (cmd, "METRIC")) {
+                char *type = zmsg_popstr (msg);
+                char *element = zmsg_popstr (msg);
+                char *value = zmsg_popstr (msg);
+                char *units = zmsg_popstr (msg);
+                zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, 60);
+                //size_t s = strlen(type) + strlen(element) + 2
+                char *topic;
+                asprintf(&topic, "%s@%s", type, element);
+                mlm_client_send (self->mlm, topic, &metric);
+                zmsg_destroy (&metric);
+                zstr_free (&topic);
+                zstr_free (&type);
+                zstr_free (&topic);
+                zstr_free (&value);
+                zstr_free (&units);
+            }
+            zstr_free (&cmd);
+            zmsg_destroy (&msg);
         }
     }
     zpoller_destroy (&poller);
