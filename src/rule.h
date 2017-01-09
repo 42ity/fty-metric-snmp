@@ -45,6 +45,7 @@ int rule_parse (rule_t *self, const char *json);
 
 int rule_load (rule_t *self, const char *path);
 
+void rule_freefn (void *self);
 //  @end
 
 #ifdef __cplusplus

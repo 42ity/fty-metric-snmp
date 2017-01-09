@@ -128,6 +128,14 @@ rule_destroy (rule_t **self_p)
     }
 }
 
+void
+rule_freefn (void *self)
+{
+    if (!self) return;
+    rule_t *rulep = (rule_t *)self;
+    rule_destroy (&rulep);
+}
+
 //  --------------------------------------------------------------------------
 //  Self test of this class
 
@@ -145,3 +153,4 @@ rule_test (bool verbose)
     //  @end
     printf ("OK\n");
 }
+

@@ -74,6 +74,37 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
     }
 }
 
+void
+fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *path)
+{
+    if (!self || !path) return;
+    char fullpath [PATH_MAX];
+    
+    DIR *dir = opendir(path);
+    if (!dir) return;
+
+    struct dirent * entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG) {
+            // file or link
+            int l = strlen (entry -> d_name);
+            if ( l > 5 && streq (&(entry -> d_name[l - 6]), ".json")) {
+                // json file
+                rule_t *rule = rule_new();
+                snprintf (fullpath, PATH_MAX, "%s/%s", path, entry -> d_name);
+                if (rule_load (rule, fullpath) == 0) {
+                    zlist_append (self->rules, rule);
+                    zlist_freefn (self->rules, rule, rule_freefn, true);
+                } else {
+                    rule_destroy (&rule);
+                }
+            }
+        }
+    }
+    closedir(dir);
+}
+
+
 //  --------------------------------------------------------------------------
 //  Main fty_metric_snmp_server actor
 
@@ -82,7 +113,7 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
 {
     fty_metric_snmp_server_t *self = fty_metric_snmp_server_new ();
     assert (self);
-    zpoller_t *poller = zpoller_new (pipe, NULL);
+    zpoller_t *poller = zpoller_new (pipe, mlm_client_msgpipe (self->mlm), NULL);
     // TODO: read list of communities (zconfig)
     // TODO: connect to malamute
     // TODO: read rules
@@ -124,10 +155,27 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         zstr_free (&stream);
                         zstr_free (&pattern);
                     }
+                    else if (streq (cmd, "LOADRULES")) {
+                        char *path = zmsg_popstr (msg);
+                        assert (path);
+                        fty_metric_snmp_server_load_rules (self, path);
+                        zstr_free (&path);
+                    }
                     zstr_free (&cmd);
                 }
                 zmsg_destroy (&msg);
             }
+        }
+        else if (which == mlm_client_msgpipe (self->mlm)) {
+            // got malamute message, probably an asset
+        }
+        else if (which == NULL) {
+            if (!zsys_interrupted) {
+                // this is polling
+            }
+        }
+        else {
+            // must be host_actor then
         }
     }
     zpoller_destroy (&poller);
