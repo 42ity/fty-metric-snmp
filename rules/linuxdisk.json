@@ -14,7 +14,21 @@ function main (host)
     Percentage of space used on disk: .1.3.6.1.4.1.2021.9.1.9.1
     Percentage of inodes used on disk: .1.3.6.1.4.1.2021.9.1.10.1
 ]]
-    return { }
+    prefix = '.1.3.6.1.4.1.2021.9.1.2'
+    prefixlen = string.len (prefix)
+    result = { }
+    oid, name = snmp_getnext (host, prefix)
+    i = 1
+    while (string.sub (oid,1,prefixlen) == prefix)
+        idx = string.sub (oid, prefixlen+1)
+        space = snmp_get (host, '.1.3.6.1.4.1.2021.9.1.9' .. idx)
+        result[i] = 'disk.' .. name
+        result[i+1] = space
+        result[i+2] = '%'
+        i = i + 3
+        oid, name = snmp_getnext (host, oid)
+    end
+    return result
 end
 "
 }
