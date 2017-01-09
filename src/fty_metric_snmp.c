@@ -28,6 +28,10 @@
 
 #include "fty_metric_snmp_classes.h"
 
+static const char *ACTOR_NAME = "fty-metric-smtp";
+static const char *ENDPOINT = "ipc://@/malamute";
+static const char *RULES_DIR = "./rules";
+
 int main (int argc, char *argv [])
 {
     bool verbose = false;
@@ -53,6 +57,10 @@ int main (int argc, char *argv [])
         zsys_info ("fty_metric_snmp - started");
     zactor_t *server = zactor_new (fty_metric_snmp_server_actor, NULL);
     assert (server);
+    zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
+    zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
+    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
+    zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);
         zmsg_destroy (&msg);
