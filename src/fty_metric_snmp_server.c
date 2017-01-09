@@ -110,6 +110,20 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         zstr_free (&endpoint);
                         zstr_free (&myname);
                     }
+                    else if (streq (cmd, "PRODUCER")) {
+                        char *stream = zmsg_popstr (msg);
+                        assert (stream);
+                        mlm_client_set_producer (self->mlm, stream);
+                        zstr_free (&stream);
+                    }
+                    else if (streq (cmd, "CONSUMER")) {
+                        char *stream = zmsg_popstr (msg);
+                        char *pattern = zmsg_popstr (msg);
+                        assert (stream && pattern);
+                        mlm_client_set_consumer (self->mlm, stream, pattern);
+                        zstr_free (&stream);
+                        zstr_free (&pattern);
+                    }
                     zstr_free (&cmd);
                 }
                 zmsg_destroy (&msg);
