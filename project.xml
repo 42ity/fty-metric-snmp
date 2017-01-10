@@ -33,6 +33,7 @@
     <class name = "luasnmp" private = "1">lua snmp extension</class>
     <class name = "rule" private = "1">class representing one rule</class>
     <class name = "vsjson" private = "1">JSON parser</class>
+    <class name = "host_actor" private = "1">Actor monitoring one host</class>
     <class name = "credentials" private = "1">list of snmp credentials</class>
     <class name = "fty_metric_snmp_server" state = "stable">Actor</class>
 

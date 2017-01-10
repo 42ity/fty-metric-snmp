@@ -154,3 +154,13 @@ rule_test (bool verbose)
     printf ("OK\n");
 }
 
+void
+vsjson_test (bool verbose)
+{
+    printf (" * vsjson: ");
+
+    //  @selftest
+    //  @end
+    printf ("OK\n");
+}
+

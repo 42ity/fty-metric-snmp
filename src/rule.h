@@ -48,6 +48,8 @@ int rule_load (rule_t *self, const char *path);
 void rule_freefn (void *self);
 //  @end
 
+void vsjson_test (bool verbose);
+
 #ifdef __cplusplus
 }
 #endif
