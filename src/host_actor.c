@@ -51,25 +51,76 @@ void zhash_lua_free (void *data) {
 void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
 {
     lua_State *l = luasnmp_new ();
-    luaL_dostring (l, func);
-    // TODO: check whether it compiles
-    // TODO: check whether main(host) exists
-    // TODO: push snmp credentials
-    zhash_insert (functions, name, func);
+    if (luaL_dostring (l, func) != 0) {
+        zsys_error ("rule %s has an error", name);
+        luasnmp_destroy (&l);
+        return;
+    }
+    lua_getglobal (l, "main");
+    if (!lua_isfunction (l, -1)) {
+        zsys_error ("main function not found in rule %s", name);
+        luasnmp_destroy (&l);
+        return;
+    }
+    lua_settop (l, 0);
+    zhash_insert (functions, name, l);
     zhash_freefn (functions, name, zhash_lua_free);
 }
 
+void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_t *pipe)
+{
+    lua_settop (l, 0);
+    lua_getglobal (l, "main");
+    lua_pushstring (l, ip);
+    
+    if (lua_pcall(l, 1, 1, 0) == 0) {
+        // check if result is an array
+        if (! lua_istable (l, -1)) {
+            zsys_error ("function did not returned array");
+            return;
+        }
+        int i = 1;
+        while (true) {
+            const char *type = NULL;
+            const char *value = NULL;
+            const char *units = NULL;
+
+            lua_pushnumber(l, i++);
+            lua_gettable(l, -2);
+            if (lua_isstring (l, -1)) type = lua_tostring(l,-1);
+            lua_pop (l, 1);
+
+            lua_pushnumber(l, i++);
+            lua_gettable(l, -2);
+            if (lua_isstring (l, -1)) value = lua_tostring(l,-1);
+            lua_pop (l, 1);
+
+            lua_pushnumber(l, i++);
+            lua_gettable(l, -2);
+            if (lua_isstring (l, -1)) units = lua_tostring(l,-1);
+            lua_pop (l, 1);
+
+            if (type && value && units) {
+                // zsys_debug ("sending METRIC/%s/%s/%s/%s", name, type, value, units);
+                zstr_sendx (pipe, "METRIC", name, type, value, units, NULL);
+            } else {
+                break;
+            }
+        }
+    }
+}
 //  --------------------------------------------------------------------------
 //  actor function
 
 void
 host_actor (zsock_t *pipe, void *args)
 {
-    char *host = NULL;
+    char *asset = NULL;
+    char *ip = NULL;
     // snmp credentials?
     snmp_credentials_t credentials = {0, NULL};
     zhash_t *functions = zhash_new ();
-    zhash_autofree (functions);
+    //zhash_autofree (functions);
     
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
@@ -82,8 +133,14 @@ host_actor (zsock_t *pipe, void *args)
                     zmsg_destroy (&msg);
                     goto cleanup;
                 }
-                else if (streq (cmd, "POLL")) {
-                    // TODO
+                else if (streq (cmd, "WAKEUP")) {
+                    if (ip) {
+                        lua_State *l = (lua_State *) zhash_first (functions);
+                        while(l) {
+                            host_actor_evaluate (l, asset, ip, pipe);
+                            l = (lua_State *) zhash_next (functions);
+                        }
+                    }
                 }
                 else if (streq (cmd, "LUA")) {
                     char *name = zmsg_popstr (msg);
@@ -106,9 +163,13 @@ host_actor (zsock_t *pipe, void *args)
                     zstr_free (&version);
                     zstr_free (&community);
                 }
-                else if (streq (cmd, "HOST")) {
-                    zstr_free (&host);
-                    host = zmsg_popstr (msg);
+                else if (streq (cmd, "ASSETNAME")) {
+                    zstr_free (&asset);
+                    asset = zmsg_popstr (msg);
+                }
+                else if (streq (cmd, "IP")) {
+                    zstr_free (&ip);
+                    ip = zmsg_popstr (msg);
                 }
             }
             zstr_free (&cmd);
@@ -118,7 +179,8 @@ host_actor (zsock_t *pipe, void *args)
 
  cleanup:
     zhash_destroy (&functions);
-    zstr_free (&host);
+    zstr_free (&asset);
+    zstr_free (&ip);
     zstr_free (&credentials.community);
 }
 
@@ -132,10 +194,12 @@ host_actor_test (bool verbose)
     //  @selftest
     zactor_t *actor = zactor_new (host_actor, NULL);
     assert (actor);
-    zstr_sendx (actor, "HOST", "127.0.0.1", NULL);
+    zstr_sendx (actor, "ASSETNAME", "localhost", NULL);
+    zstr_sendx (actor, "IP", "127.0.0.1", NULL);
     zstr_sendx (actor, "CREDENTIALS", "1", "public", NULL);
-    zstr_sendx (actor, "FUNCTION", "load", "function main(host) return { 'load', 15, '%' } end", NULL);
-    // zmsg_sendx (actor, "POLL", NULL);
+    zstr_sendx (actor, "LUA", "load", "function main(host) return { 'load', 15, '%' } end", NULL);
+    zstr_sendx (actor, "WAKEUP", NULL);
+    zclock_sleep (1000);
     // zmsg_t *msg = zmsg_recv (actor); // get metric
     zactor_destroy (&actor);    
     //  @end
