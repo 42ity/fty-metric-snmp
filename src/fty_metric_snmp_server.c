@@ -111,7 +111,21 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
 zactor_t *
 fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zpoller_t *poller)
 {
-    return NULL;
+    if (!self || !ftymsg) return NULL;
+    
+    const char *assetname = fty_proto_name (ftymsg);
+    zhash_t *ext = fty_proto_ext (ftymsg);
+    const char *ip = (char *)zhash_lookup (ext, "ip.1");
+    if (!ip) return NULL;
+    if (zhash_lookup (self->host_actors, assetname)) {
+        //already exists
+        return NULL;
+    }
+    zactor_t *host = zactor_new(host_actor, NULL);
+    zstr_sendx (host, "HOST", NULL);
+    zstr_sendx (host, "CREDENTIALS", "1", "public", NULL);
+    zhash_insert (self->host_actors, assetname, host);
+    return host;
 }
 
 zactor_t *
@@ -222,7 +236,7 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                     zstr_free (&topic);
                 }
                 zstr_free (&type);
-                zstr_free (&topic);
+                zstr_free (&element);
                 zstr_free (&value);
                 zstr_free (&units);
             }
