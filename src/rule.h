@@ -45,6 +45,12 @@ int rule_parse (rule_t *self, const char *json);
 
 int rule_load (rule_t *self, const char *path);
 
+zlist_t *rule_assets (rule_t *self);
+
+zlist_t *rule_groups (rule_t *self);
+
+const char *rule_evaluation (rule_t *self);
+
 void rule_freefn (void *self);
 //  @end
 

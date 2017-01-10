@@ -49,8 +49,10 @@ rule_new (void)
     assert (self);
     self -> assets = zlist_new ();
     zlist_autofree (self -> assets);
+    zlist_comparefn (self -> assets, (int (*)(void *, void *))strcmp);
     self -> groups = zlist_new ();
     zlist_autofree (self -> groups);
+    zlist_comparefn (self -> groups, (int (*)(void *, void *))strcmp);
     return self;
 }
 
@@ -134,6 +136,24 @@ rule_freefn (void *self)
     if (!self) return;
     rule_t *rulep = (rule_t *)self;
     rule_destroy (&rulep);
+}
+
+const char *rule_evaluation (rule_t *self)
+{
+    if (!self) return NULL;
+    return self->evaluation;
+}
+
+zlist_t *rule_assets (rule_t *self)
+{
+    if (!self) return NULL;
+    return self->assets;
+}
+
+zlist_t *rule_groups (rule_t *self)
+{
+    if (!self) return NULL;
+    return self->groups;
 }
 
 //  --------------------------------------------------------------------------

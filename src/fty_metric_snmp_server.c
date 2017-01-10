@@ -108,8 +108,34 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
     closedir(dir);
 }
 
+int
+is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
+{
+    if (!rule || !ftymsg) return 0;
+    
+    char *asset = (char *)fty_proto_name (ftymsg);
+    if (zlist_exists (rule_assets(rule), asset)) return 1;
+    
+    zhash_t *ext = fty_proto_ext (ftymsg);
+    zlist_t *keys = zhash_keys (ext);
+    char *key = (char *)zlist_first (keys);
+    while (key) {
+        if (strncmp ("group.", key, 6) == 0) {
+            // this is group
+            char * grp = (char *)zhash_lookup (ext, key);
+            if (zlist_exists (rule_groups (rule), grp)) {
+                zlist_destroy (&keys);
+                return 1;
+            }
+        }
+        key = (char *)zlist_next (keys);
+    }
+    zlist_destroy (&keys);
+    return 0;
+}
+
 zactor_t *
-fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zpoller_t *poller)
+fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
 {
     if (!self || !ftymsg) return NULL;
     
@@ -122,6 +148,20 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
         return NULL;
     }
     zactor_t *host = zactor_new(host_actor, NULL);
+    rule_t *rule = (rule_t *)zlist_first (self->rules);
+    bool haverule = false;
+    while (rule) {
+        if (is_rule_for_this_asset (rule, ftymsg)) {
+            haverule = true;
+            zstr_sendx (host, "LUA", rule_evaluation(rule), NULL);
+        }
+        rule = (rule_t *)zlist_next (self->rules);
+    }
+    if (!haverule) {
+        // no rules, no need to have an actor
+        zactor_destroy (&host);
+        return NULL;
+    }
     zstr_sendx (host, "HOST", NULL);
     zstr_sendx (host, "CREDENTIALS", "1", "public", NULL);
     zhash_insert (self->host_actors, assetname, host);
@@ -203,7 +243,10 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         streq (fty_proto_operation (ftymsg), "update") ||
                         streq (fty_proto_operation (ftymsg), "create")
                     ) {
-                        fty_metric_snmp_server_asset_update (self, ftymsg, poller);
+                        zactor_t *act = fty_metric_snmp_server_asset_update (self, ftymsg);
+                        if (act) {
+                            zpoller_add (poller, act);
+                        }
                     }
                     if (streq (fty_proto_operation (ftymsg), "delete")) {
                         fty_metric_snmp_server_asset_delete (self, ftymsg, poller);
