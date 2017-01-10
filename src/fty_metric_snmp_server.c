@@ -213,13 +213,14 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                 char *element = zmsg_popstr (msg);
                 char *value = zmsg_popstr (msg);
                 char *units = zmsg_popstr (msg);
-                zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, 60);
-                //size_t s = strlen(type) + strlen(element) + 2
-                char *topic;
-                asprintf(&topic, "%s@%s", type, element);
-                mlm_client_send (self->mlm, topic, &metric);
-                zmsg_destroy (&metric);
-                zstr_free (&topic);
+                if (type && element && value && units) {
+                    char *topic;
+                    asprintf(&topic, "%s@%s", type, element);
+                    zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, 60);
+                    mlm_client_send (self->mlm, topic, &metric);
+                    zmsg_destroy (&metric);
+                    zstr_free (&topic);
+                }
                 zstr_free (&type);
                 zstr_free (&topic);
                 zstr_free (&value);
