@@ -198,9 +198,31 @@ host_actor_test (bool verbose)
     zstr_sendx (actor, "IP", "127.0.0.1", NULL);
     zstr_sendx (actor, "CREDENTIALS", "1", "public", NULL);
     zstr_sendx (actor, "LUA", "load", "function main(host) return { 'load', 15, '%' } end", NULL);
+
     zstr_sendx (actor, "WAKEUP", NULL);
-    zclock_sleep (1000);
-    // zmsg_t *msg = zmsg_recv (actor); // get metric
+    zmsg_t *msg = zmsg_recv (actor);
+    char *c = zmsg_popstr (msg);
+    assert (c);
+    assert (streq (c, "METRIC"));
+    zstr_free (&c);
+    c = zmsg_popstr (msg);
+    assert (c);
+    assert (streq (c, "localhost"));
+    zstr_free (&c);
+    c = zmsg_popstr (msg);
+    assert (c);
+    assert (streq (c, "load"));
+    zstr_free (&c);
+    c = zmsg_popstr (msg);
+    assert (c);
+    assert (streq (c, "15"));
+    zstr_free (&c);
+    c = zmsg_popstr (msg);
+    assert (c);
+    assert (streq (c, "%"));
+    zstr_free (&c);
+    zmsg_destroy (&msg);
+
     zactor_destroy (&actor);    
     //  @end
     printf ("OK\n");
