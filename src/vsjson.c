@@ -391,6 +391,7 @@ char *vsjson_decode_string (const char *string)
     
     if (string[0] != '"' || string[strlen (string)-1] != '"') {
         // no quotes, this is not json string
+        free (decoded);
         return NULL;
     }
     ++src;
