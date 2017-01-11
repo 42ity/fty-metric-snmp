@@ -32,6 +32,13 @@ static const char *ACTOR_NAME = "fty-metric-smtp";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *RULES_DIR = "./rules";
 
+static int
+s_wakeup_event (zloop_t *loop, int timer_id, void *output)
+{
+    zstr_send (output, "WAKEUP");
+    return 0;
+}
+
 int main (int argc, char *argv [])
 {
     bool verbose = false;
@@ -61,10 +68,17 @@ int main (int argc, char *argv [])
     zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
+
+    zloop_t *wakeup = zloop_new();
+    // as 5 minutes is the smallest possible reaction time
+    zloop_timer (wakeup, 5000, 0, s_wakeup_event, server);
+    zloop_start (wakeup);
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);
         zmsg_destroy (&msg);
     }
+    zloop_destroy (&wakeup);
+
     zactor_destroy (&server);
     if (verbose)
         zsys_info ("fty_metric_snmp - exited");

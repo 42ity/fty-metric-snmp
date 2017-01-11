@@ -34,6 +34,7 @@ struct _fty_metric_snmp_server_t {
     mlm_client_t *mlm;
     zlist_t *rules;
     zhash_t *host_actors;
+    zpoller_t *poller;
 };
 
 
@@ -72,6 +73,7 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
         mlm_client_destroy (&self->mlm);
         zlist_destroy (&self->rules);
         zhash_destroy (&self->host_actors);
+        zpoller_destroy (&self->poller);
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -169,27 +171,37 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
 }
 
 zactor_t *
-fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zpoller_t *poller)
+fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
 {
     return NULL;
 }
 
+void
+fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *pipe)
+{
+    zpoller_destroy (&self -> poller);
+    self -> poller = zpoller_new (self -> mlm, pipe, NULL);
+    zactor_t *a = (zactor_t *) zhash_first (self -> host_actors);
+    while (a) {
+        zpoller_add (self -> poller, a);
+        a = (zactor_t *) zhash_next (self -> host_actors);
+    }
+}
 //  --------------------------------------------------------------------------
 //  Main fty_metric_snmp_server actor
 
 void
-fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
+fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t *pipe)
 {
-    fty_metric_snmp_server_t *self = fty_metric_snmp_server_new ();
-    assert (self);
-    zpoller_t *poller = zpoller_new (pipe, mlm_client_msgpipe (self->mlm), NULL);
+    if (!self || !pipe) return;
+
+    fty_metric_snmp_server_update_poller (self, pipe);
+    self -> poller = zpoller_new (pipe, mlm_client_msgpipe (self->mlm), NULL);
     // TODO: read list of communities (zconfig)
-    // TODO: react on asset from stream
-    // TODO: react on metric from host_actor
     // TODO: send POLL event to host_actors (zloop)?
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
-        zsock_t *which = (zsock_t *)zpoller_wait(poller, 30);
+        zsock_t *which = (zsock_t *) zpoller_wait (self -> poller, 30);
         if (which == pipe) {
             zmsg_t *msg = zmsg_recv (pipe);
             if (msg) {
@@ -228,6 +240,9 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                         fty_metric_snmp_server_load_rules (self, path);
                         zstr_free (&path);
                     }
+                    else if (streq (cmd, "WAKEUP")) {
+                        zsys_debug ("WAKEUP");
+                    }
                     zstr_free (&cmd);
                 }
                 zmsg_destroy (&msg);
@@ -245,11 +260,12 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
                     ) {
                         zactor_t *act = fty_metric_snmp_server_asset_update (self, ftymsg);
                         if (act) {
-                            zpoller_add (poller, act);
+                            fty_metric_snmp_server_update_poller (self, pipe);
                         }
                     }
                     if (streq (fty_proto_operation (ftymsg), "delete")) {
-                        fty_metric_snmp_server_asset_delete (self, ftymsg, poller);
+                        fty_metric_snmp_server_asset_delete (self, ftymsg);
+                        fty_metric_snmp_server_update_poller (self, pipe);
                     }
                 }
                 fty_proto_destroy (&ftymsg);
@@ -287,10 +303,17 @@ fty_metric_snmp_server_actor (zsock_t *pipe, void *args)
             zmsg_destroy (&msg);
         }
     }
-    zpoller_destroy (&poller);
     fty_metric_snmp_server_destroy (&self);
 }
 
+void
+fty_metric_snmp_server_actor(zsock_t *pipe, void *args)
+{
+    fty_metric_snmp_server_t *self = fty_metric_snmp_server_new();
+    assert (self);
+    fty_metric_snmp_server_actor_main_loop (self, pipe);
+    fty_metric_snmp_server_destroy (&self);
+}
 
 //  --------------------------------------------------------------------------
 //  Self test of this class
