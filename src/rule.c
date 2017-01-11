@@ -74,11 +74,13 @@ int rule_json_callback (const char *locator, const char *value, void *data)
         char *asset = vsjson_decode_string (value);
         zlist_append (self -> assets, asset);
         zlist_freefn (self -> assets, asset, free, true);
+        zstr_free (&asset);
     }
     else if (strncmp (locator, "groups/", 7) == 0) {
         char *group = vsjson_decode_string (value);
         zlist_append (self -> groups, group);
         zlist_freefn (self -> groups, group, free, true);
+        zstr_free (&group);
     }
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
@@ -106,7 +108,9 @@ int rule_load (rule_t *self, const char *path)
 
     read (fd, buffer, capacity);
     close (fd);
-    return rule_parse (self, buffer);
+    int result = rule_parse (self, buffer);
+    free (buffer);
+    return result;
 }
 
 //  --------------------------------------------------------------------------
