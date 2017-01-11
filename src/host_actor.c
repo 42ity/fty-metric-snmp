@@ -37,6 +37,56 @@
 #include <zactor.h>
 #include <zhash.h>
 #include <zmsg.h>
+
+struct _host_actor_t {
+    char *asset;
+    char *ip;
+    snmp_credentials_t credentials;
+    zhash_t *functions;
+};
+
+host_actor_t *
+host_actor_new ()
+{
+    host_actor_t *self = (host_actor_t *) zmalloc (sizeof (host_actor_t));
+    assert (self);
+    self -> functions = zhash_new ();
+    return self;
+}
+
+void
+host_actor_destroy (host_actor_t **self_p)
+{
+    if (!self_p || !*self_p) return;
+    host_actor_t *self = *self_p;
+
+    zstr_free (&self->asset);
+    zstr_free (&self->ip);
+    zstr_free (&self->credentials.community);
+    host_actor_remove_functions (self);
+    zhash_destroy (&self->functions);
+    free (self);
+    *self_p = NULL;
+}
+
+void host_actor_remove_function (host_actor_t *self, const char *name)
+{
+    if (!self || ! name) return;
+    zhash_delete (self->functions, name);
+}
+
+void host_actor_remove_functions (host_actor_t *self)
+{
+    if (!self) return;
+    zlist_t *keys = zhash_keys (self->functions);
+    char *key = (char *) zlist_first (keys);
+    while (key) {
+        host_actor_remove_function (self, key);
+        key = (char *) zlist_next (keys);
+    }
+    zlist_destroy (&keys);
+}
+
 //  --------------------------------------------------------------------------
 //  free function for zhash
 
@@ -113,14 +163,12 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
 //  actor function
 
 void
-host_actor (zsock_t *pipe, void *args)
+host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
 {
-    char *asset = NULL;
-    char *ip = NULL;
-    // snmp credentials?
-    snmp_credentials_t credentials = {0, NULL};
-    zhash_t *functions = zhash_new ();
-    //zhash_autofree (functions);
+    if (! self) {
+        zsock_signal (pipe, -1);
+        return;
+    }
     
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
@@ -131,14 +179,14 @@ host_actor (zsock_t *pipe, void *args)
                 if (streq (cmd, "$TERM")) {
                     zstr_free (&cmd);
                     zmsg_destroy (&msg);
-                    goto cleanup;
+                    break; //goto cleanup;
                 }
                 else if (streq (cmd, "WAKEUP")) {
-                    if (ip) {
-                        lua_State *l = (lua_State *) zhash_first (functions);
+                    if (self->ip) {
+                        lua_State *l = (lua_State *) zhash_first (self->functions);
                         while(l) {
-                            host_actor_evaluate (l, asset, ip, pipe);
-                            l = (lua_State *) zhash_next (functions);
+                            host_actor_evaluate (l, self->asset, self->ip, pipe);
+                            l = (lua_State *) zhash_next (self->functions);
                         }
                     }
                 }
@@ -146,7 +194,7 @@ host_actor (zsock_t *pipe, void *args)
                     char *name = zmsg_popstr (msg);
                     char *func = zmsg_popstr (msg);
                     if (name && func) {
-                        host_actor_add_lua_function (functions, name, func, &credentials);
+                        host_actor_add_lua_function (self->functions, name, func, &self->credentials);
                     }
                     zstr_free (&name);
                     zstr_free (&func);
@@ -155,21 +203,21 @@ host_actor (zsock_t *pipe, void *args)
                     char *version = zmsg_popstr (msg);
                     char *community = zmsg_popstr (msg);
                     if (version && community) {
-                        zstr_free (&credentials.community);
-                        credentials.version = atoi (version);
-                        credentials.community = community;
+                        zstr_free (&self->credentials.community);
+                        self -> credentials.version = atoi (version);
+                        self -> credentials.community = community;
                         community = NULL;
                     }
                     zstr_free (&version);
                     zstr_free (&community);
                 }
                 else if (streq (cmd, "ASSETNAME")) {
-                    zstr_free (&asset);
-                    asset = zmsg_popstr (msg);
+                    zstr_free (&self -> asset);
+                    self -> asset = zmsg_popstr (msg);
                 }
                 else if (streq (cmd, "IP")) {
-                    zstr_free (&ip);
-                    ip = zmsg_popstr (msg);
+                    zstr_free (&self -> ip);
+                    self -> ip = zmsg_popstr (msg);
                 }
             }
             zstr_free (&cmd);
@@ -177,13 +225,20 @@ host_actor (zsock_t *pipe, void *args)
         }
     }
 
- cleanup:
-    zhash_destroy (&functions);
-    zstr_free (&asset);
-    zstr_free (&ip);
-    zstr_free (&credentials.community);
+    // cleanup:
+    //zhash_destroy (&functions);
+    //zstr_free (&asset);
+    //zstr_free (&ip);
+    //zstr_free (&credentials.community);
 }
 
+void host_actor (zsock_t *pipe, void *args)
+{
+    host_actor_t *self = host_actor_new();
+    assert (self);
+    host_actor_main_loop (self, pipe);
+    host_actor_destroy (&self);
+}
 //  --------------------------------------------------------------------------
 //  Self test of this class
 
@@ -223,7 +278,7 @@ host_actor_test (bool verbose)
     zstr_free (&c);
     zmsg_destroy (&msg);
 
-    zactor_destroy (&actor);    
+    zactor_destroy (&actor);
     //  @end
     printf ("OK\n");
 }

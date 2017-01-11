@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+typedef struct _host_actor_t host_actor_t;
+
 //  @interface
 //  host actor function
 FTY_METRIC_SNMP_EXPORT void
@@ -34,6 +36,18 @@ FTY_METRIC_SNMP_EXPORT void
 //  Self test of this class
 FTY_METRIC_SNMP_EXPORT void
     host_actor_test (bool verbose);
+
+FTY_METRIC_SNMP_EXPORT host_actor_t *
+    host_actor_new ();
+
+FTY_METRIC_SNMP_EXPORT void
+    host_actor_destroy (host_actor_t **self_p);
+
+FTY_METRIC_SNMP_EXPORT void
+    host_actor_remove_function (host_actor_t *self, const char *name);
+
+FTY_METRIC_SNMP_EXPORT void
+    host_actor_remove_functions (host_actor_t *self);
 
 //  @end
 
