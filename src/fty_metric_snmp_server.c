@@ -197,7 +197,7 @@ fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *p
 {
     if (!self || !pipe ) return;
     zpoller_destroy (&self -> poller);
-    self -> poller = zpoller_new (pipe, self -> mlm, NULL);
+    self -> poller = zpoller_new (pipe, mlm_client_msgpipe (self -> mlm), NULL);
     zactor_t *a = (zactor_t *) zhash_first (self -> host_actors);
     while (a) {
         zpoller_add (self -> poller, a);
@@ -221,7 +221,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             zmsg_t *msg = zmsg_recv (pipe);
             if (msg) {
                 char *cmd = zmsg_popstr (msg);
-                zsys_debug ("pipe commend %s", cmd);
+                zsys_debug ("pipe command %s", cmd);
                 if (cmd) {
                     if (streq (cmd, "$TERM")) {
                         zstr_free (&cmd);
@@ -351,7 +351,7 @@ fty_metric_snmp_server_test (bool verbose)
     fty_metric_snmp_server_t *self = fty_metric_snmp_server_new ();
     assert (self);
     fty_metric_snmp_server_destroy (&self);
-    
+
     // actor test
     static const char *endpoint = "inproc://fty-metric-snmp";
     zactor_t *malamute = zactor_new (mlm_server, (void*) "Malamute");
