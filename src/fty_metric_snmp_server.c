@@ -276,9 +276,8 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             }
         }
         else if (which == mlm_client_msgpipe (self->mlm)) {
-            zsys_debug ("got malamute message");
             // got malamute message, probably an asset
-            zmsg_t *msg = zmsg_recv (which); 
+            zmsg_t *msg = mlm_client_recv (self->mlm);
             if (msg && is_fty_proto (msg)) {
                 fty_proto_t *ftymsg = fty_proto_decode (&msg);
                 if (fty_proto_id (ftymsg) == FTY_PROTO_ASSET) {
@@ -364,6 +363,39 @@ fty_metric_snmp_server_test (bool verbose)
     zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
 
+    static const char *rule =
+        "{"
+        " \"name\" : \"testrule\","
+        " \"description\" : \"Rule for testing\","
+        " \"assets\" : [\"mydevice\"],"
+        " \"groups\" : [\"mygroup\"],"
+        " \"evaluation\" : \""
+        "   function main (host)"
+        "     return { 'temperature', 10, 'C' }"
+        "   end"
+        " \""
+        "}";
+    zstr_sendx (server, "RULE", rule, NULL);
+
+    mlm_client_t *asset = mlm_client_new ();
+    mlm_client_connect (asset, endpoint, 5000, "assetsource");
+    mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
+
+    zhash_t *ext = zhash_new();
+    zhash_autofree (ext);
+    zhash_insert (ext, "ip.1", "127.0.0.1");
+    zmsg_t *assetmsg = fty_proto_encode_asset (
+        NULL,
+        "myasset",
+        "update",
+        ext
+    );
+    zhash_destroy (&ext);
+    mlm_client_send (asset, "myasset", &assetmsg);
+    zmsg_destroy (&assetmsg);
+    
+    zclock_sleep(1000);
+    mlm_client_destroy (&asset);
     zactor_destroy (&server);
     zactor_destroy (&malamute);
     //  @end
