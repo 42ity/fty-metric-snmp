@@ -224,12 +224,6 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
             zmsg_destroy (&msg);
         }
     }
-
-    // cleanup:
-    //zhash_destroy (&functions);
-    //zstr_free (&asset);
-    //zstr_free (&ip);
-    //zstr_free (&credentials.community);
 }
 
 void host_actor (zsock_t *pipe, void *args)

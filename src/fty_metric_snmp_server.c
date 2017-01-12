@@ -52,7 +52,6 @@ fty_metric_snmp_server_new (void)
     
     self->rules = zlist_new();
     assert (self->rules);
-    zlist_autofree (self->rules);
 
     self->host_actors = zhash_new();
     assert (self->host_actors);
@@ -66,8 +65,10 @@ fty_metric_snmp_server_new (void)
 void
 fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
 {
+    zsys_debug ("destroy");
     assert (self_p);
     if (*self_p) {
+        zsys_debug ("destroying");
         fty_metric_snmp_server_t *self = *self_p;
         //  Free class properties here
         mlm_client_destroy (&self->mlm);
@@ -77,6 +78,21 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
         //  Free object itself
         free (self);
         *self_p = NULL;
+    }
+    zsys_debug ("destroy exit");
+}
+
+void
+fty_metric_snmp_server_add_rule (fty_metric_snmp_server_t *self, const char *json)
+{
+    if (!self || !json) return;
+
+    rule_t *rule = rule_new();
+    if (rule_parse (rule, json) == 0) {
+        zlist_append (self->rules, rule);
+        zlist_freefn (self->rules, rule, rule_freefn, true);
+    } else {
+        rule_destroy (&rule);
     }
 }
 
@@ -179,8 +195,9 @@ fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t
 void
 fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *pipe)
 {
+    if (!self || !pipe ) return;
     zpoller_destroy (&self -> poller);
-    self -> poller = zpoller_new (self -> mlm, pipe, NULL);
+    self -> poller = zpoller_new (pipe, self -> mlm, NULL);
     zactor_t *a = (zactor_t *) zhash_first (self -> host_actors);
     while (a) {
         zpoller_add (self -> poller, a);
@@ -196,16 +213,15 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
     if (!self || !pipe) return;
 
     fty_metric_snmp_server_update_poller (self, pipe);
-    self -> poller = zpoller_new (pipe, mlm_client_msgpipe (self->mlm), NULL);
     // TODO: read list of communities (zconfig)
-    // TODO: send POLL event to host_actors (zloop)?
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
-        zsock_t *which = (zsock_t *) zpoller_wait (self -> poller, 30);
+        zsock_t *which = (zsock_t *) zpoller_wait (self -> poller, -1);
         if (which == pipe) {
             zmsg_t *msg = zmsg_recv (pipe);
             if (msg) {
                 char *cmd = zmsg_popstr (msg);
+                zsys_debug ("pipe commend %s", cmd);
                 if (cmd) {
                     if (streq (cmd, "$TERM")) {
                         zstr_free (&cmd);
@@ -240,8 +256,19 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                         fty_metric_snmp_server_load_rules (self, path);
                         zstr_free (&path);
                     }
+                    else if (streq (cmd, "RULE")) {
+                        char *json = zmsg_popstr (msg);
+                        assert (json);
+                        fty_metric_snmp_server_add_rule (self, json);
+                        zstr_free (&json);
+                    }
                     else if (streq (cmd, "WAKEUP")) {
                         zsys_debug ("WAKEUP");
+                        zactor_t *a = (zactor_t *) zhash_first (self -> host_actors);
+                        while (a) {
+                            zstr_send (a, "WAKEUP");
+                            a = (zactor_t *) zhash_next (self -> host_actors);
+                        }
                     }
                     zstr_free (&cmd);
                 }
@@ -249,6 +276,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             }
         }
         else if (which == mlm_client_msgpipe (self->mlm)) {
+            zsys_debug ("got malamute message");
             // got malamute message, probably an asset
             zmsg_t *msg = zmsg_recv (which); 
             if (msg && is_fty_proto (msg)) {
@@ -272,18 +300,14 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             }
             zmsg_destroy (&msg);
         }
-        else if (which == NULL) {
-            if (!zsys_interrupted) {
-                // this is polling
-            }
-        }
-        else {
+        else if (which != NULL) {
             // must be host_actor then
+            zsys_debug ("got host actor message");
             zmsg_t *msg = zmsg_recv (which);
             char *cmd = zmsg_popstr (msg);
             if (cmd && streq (cmd, "METRIC")) {
-                char *type = zmsg_popstr (msg);
                 char *element = zmsg_popstr (msg);
+                char *type = zmsg_popstr (msg);
                 char *value = zmsg_popstr (msg);
                 char *units = zmsg_popstr (msg);
                 if (type && element && value && units) {
@@ -303,7 +327,6 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             zmsg_destroy (&msg);
         }
     }
-    fty_metric_snmp_server_destroy (&self);
 }
 
 void
@@ -328,6 +351,21 @@ fty_metric_snmp_server_test (bool verbose)
     fty_metric_snmp_server_t *self = fty_metric_snmp_server_new ();
     assert (self);
     fty_metric_snmp_server_destroy (&self);
+    
+    // actor test
+    static const char *endpoint = "inproc://fty-metric-snmp";
+    zactor_t *malamute = zactor_new (mlm_server, (void*) "Malamute");
+    zstr_sendx (malamute, "BIND", endpoint, NULL);
+    if (verbose) zstr_send (malamute, "VERBOSE");
+
+    zactor_t *server = zactor_new (fty_metric_snmp_server_actor, NULL);
+    assert (server);
+    zstr_sendx (server, "BIND", endpoint, "me", NULL);
+    zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
+    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
+
+    zactor_destroy (&server);
+    zactor_destroy (&malamute);
     //  @end
     printf ("OK\n");
 }
