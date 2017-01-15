@@ -65,10 +65,8 @@ fty_metric_snmp_server_new (void)
 void
 fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
 {
-    zsys_debug ("destroy");
     assert (self_p);
     if (*self_p) {
-        zsys_debug ("destroying");
         fty_metric_snmp_server_t *self = *self_p;
         //  Free class properties here
         mlm_client_destroy (&self->mlm);
@@ -79,7 +77,6 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
         free (self);
         *self_p = NULL;
     }
-    zsys_debug ("destroy exit");
 }
 
 void
