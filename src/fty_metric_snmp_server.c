@@ -174,12 +174,13 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
         //already exists
         return NULL;
     }
-    zactor_t *host = zactor_new(host_actor, NULL);
+    zactor_t *host = NULL;
     rule_t *rule = (rule_t *)zlist_first (self->rules);
     bool haverule = false;
     while (rule) {
         if (is_rule_for_this_asset (rule, ftymsg)) {
             haverule = true;
+            if (!host) host = zactor_new(host_actor, NULL);
             zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
             zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
         }
@@ -196,6 +197,7 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
     zstr_sendx (host, "IP", ip, NULL);
     zstr_sendx (host, "CREDENTIALS", "1", "public", NULL);
     zhash_insert (self->host_actors, assetname, host);
+    zhash_freefn (self->host_actors, assetname, host_actor_freefn);
     return host;
 }
 
@@ -408,7 +410,7 @@ fty_metric_snmp_server_test (bool verbose)
     mlm_client_send (asset, "myasset", &assetmsg);
     zmsg_destroy (&assetmsg);
     zclock_sleep (1000);
-    
+
     zstr_send (server, "WAKEUP");
     zclock_sleep (1000);
     zmsg_t *received = mlm_client_recv (asset);
@@ -418,7 +420,7 @@ fty_metric_snmp_server_test (bool verbose)
     
     fty_proto_destroy (&metric);
     zmsg_destroy (&received);
-    
+
     mlm_client_destroy (&asset);
     zactor_destroy (&server);
     zactor_destroy (&malamute);

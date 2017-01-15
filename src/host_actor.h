@@ -49,6 +49,9 @@ FTY_METRIC_SNMP_EXPORT void
 FTY_METRIC_SNMP_EXPORT void
     host_actor_remove_functions (host_actor_t *self);
 
+FTY_METRIC_SNMP_EXPORT void
+    host_actor_freefn (void *self);
+
 //  @end
 
 #ifdef __cplusplus

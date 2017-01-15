@@ -238,6 +238,14 @@ void host_actor (zsock_t *pipe, void *args)
     host_actor_main_loop (self, pipe);
     host_actor_destroy (&self);
 }
+
+void host_actor_freefn (void *self)
+{
+    if (!self) return;
+    zactor_t *ha = (zactor_t *) self;
+    zactor_destroy (&ha);
+}
+
 //  --------------------------------------------------------------------------
 //  Self test of this class
 
