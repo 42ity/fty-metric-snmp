@@ -49,6 +49,8 @@ zlist_t *rule_assets (rule_t *self);
 
 zlist_t *rule_groups (rule_t *self);
 
+const char *rule_name (rule_t *self);
+
 const char *rule_evaluation (rule_t *self);
 
 void rule_freefn (void *self);

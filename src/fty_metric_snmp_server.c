@@ -126,6 +126,15 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
     closedir(dir);
 }
 
+void zlist_print(zlist_t* list)
+{
+    char *s = (char *)zlist_first (list);
+    while (s) {
+        zsys_debug (" * %s", s);
+        s = (char *)zlist_next (list);
+    }
+}
+
 int
 is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
 {
@@ -171,16 +180,20 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
     while (rule) {
         if (is_rule_for_this_asset (rule, ftymsg)) {
             haverule = true;
-            zstr_sendx (host, "LUA", rule_evaluation(rule), NULL);
+            zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
+            zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
         }
         rule = (rule_t *)zlist_next (self->rules);
     }
     if (!haverule) {
         // no rules, no need to have an actor
         zactor_destroy (&host);
+        zsys_debug ("no rule for %s", assetname);
         return NULL;
     }
-    zstr_sendx (host, "HOST", NULL);
+    zsys_debug ("deploying actor for %s", assetname);
+    zstr_sendx (host, "ASSETNAME", assetname, NULL);
+    zstr_sendx (host, "IP", ip, NULL);
     zstr_sendx (host, "CREDENTIALS", "1", "public", NULL);
     zhash_insert (self->host_actors, assetname, host);
     return host;
@@ -380,21 +393,32 @@ fty_metric_snmp_server_test (bool verbose)
     mlm_client_t *asset = mlm_client_new ();
     mlm_client_connect (asset, endpoint, 5000, "assetsource");
     mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
+    mlm_client_set_consumer (asset, FTY_PROTO_STREAM_METRICS, ".*");
 
     zhash_t *ext = zhash_new();
     zhash_autofree (ext);
     zhash_insert (ext, "ip.1", "127.0.0.1");
     zmsg_t *assetmsg = fty_proto_encode_asset (
         NULL,
-        "myasset",
+        "mydevice",
         "update",
         ext
     );
     zhash_destroy (&ext);
     mlm_client_send (asset, "myasset", &assetmsg);
     zmsg_destroy (&assetmsg);
+    zclock_sleep (1000);
     
-    zclock_sleep(1000);
+    zstr_send (server, "WAKEUP");
+    zclock_sleep (1000);
+    zmsg_t *received = mlm_client_recv (asset);
+    assert (received);
+    fty_proto_t *metric = fty_proto_decode (&received);
+    fty_proto_print (metric);
+    
+    fty_proto_destroy (&metric);
+    zmsg_destroy (&received);
+    
     mlm_client_destroy (&asset);
     zactor_destroy (&server);
     zactor_destroy (&malamute);

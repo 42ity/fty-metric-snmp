@@ -160,6 +160,12 @@ zlist_t *rule_groups (rule_t *self)
     return self->groups;
 }
 
+const char *rule_name (rule_t *self)
+{
+    if (!self) return NULL;
+    return self->name;
+}
+
 //  --------------------------------------------------------------------------
 //  Self test of this class
 

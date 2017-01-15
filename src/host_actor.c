@@ -100,6 +100,7 @@ void zhash_lua_free (void *data) {
 //  compile lua function and add it to list
 void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
 {
+    zsys_debug ("adding lua func");
     lua_State *l = luasnmp_new ();
     if (luaL_dostring (l, func) != 0) {
         zsys_error ("rule %s has an error", name);
@@ -115,6 +116,7 @@ void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, co
     lua_settop (l, 0);
     zhash_insert (functions, name, l);
     zhash_freefn (functions, name, zhash_lua_free);
+    zsys_debug ("New function '%s' created", name);
 }
 
 void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_t *pipe)
@@ -122,7 +124,8 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
     lua_settop (l, 0);
     lua_getglobal (l, "main");
     lua_pushstring (l, ip);
-    
+
+    zsys_debug ("lua called for %s", name);
     if (lua_pcall(l, 1, 1, 0) == 0) {
         // check if result is an array
         if (! lua_istable (l, -1)) {
@@ -151,7 +154,7 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
             lua_pop (l, 1);
 
             if (type && value && units) {
-                // zsys_debug ("sending METRIC/%s/%s/%s/%s", name, type, value, units);
+                zsys_debug ("sending METRIC/%s/%s/%s/%s", name, type, value, units);
                 zstr_sendx (pipe, "METRIC", name, type, value, units, NULL);
             } else {
                 break;
@@ -182,8 +185,10 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                     break; //goto cleanup;
                 }
                 else if (streq (cmd, "WAKEUP")) {
+                    zsys_debug ("actor for '%s' received WAKEUP command, (%s)", self->asset, self->ip);
                     if (self->ip) {
                         lua_State *l = (lua_State *) zhash_first (self->functions);
+                        if (!l) zsys_error ("asset '%s' has no defined function", self->asset);
                         while(l) {
                             host_actor_evaluate (l, self->asset, self->ip, pipe);
                             l = (lua_State *) zhash_next (self->functions);
