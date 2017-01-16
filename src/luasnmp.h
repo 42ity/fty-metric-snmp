@@ -39,6 +39,10 @@ FTY_METRIC_SNMP_EXPORT void
 FTY_METRIC_SNMP_EXPORT void
     luasnmp_test (bool verbose);
 
+int snmp_version_to_enum (int version);
+
+int enum_to_snmp_version (int version);
+
 //  @end
 
 #ifdef __cplusplus

@@ -36,6 +36,34 @@ typedef u_long myoid;
 #include <lauxlib.h>
 #include <lualib.h>
 
+int snmp_version_to_enum (int version)
+{
+    switch (version) {
+    case 1:
+        return SNMP_VERSION_1;
+    case 2:
+        return SNMP_VERSION_2c;
+    case 3:
+        return SNMP_VERSION_3;
+    default:
+        return -1;
+    }
+}
+
+int enum_to_snmp_version (int version)
+{
+    switch (version) {
+    case SNMP_VERSION_1:
+        return 1;
+    case SNMP_VERSION_2c:
+        return 2;
+    case SNMP_VERSION_3:
+        return 3;
+    default:
+        return -1;
+    }
+}
+
 char *oid_to_sring (myoid anOID[], int len)
 {
     char buffer[1024];
@@ -159,13 +187,13 @@ static int snmp_get(lua_State *L)
     
     // get credentials/snmpversion for host
     lua_getglobal(L, "SNMP_VERSION");
-    int version = 0;
+    int version = -1;
     char *versionstr = lua_tostring (L, -1);
-    if (versionstr) version = atoi (versionstr);
+    if (versionstr) version = snmp_version_to_enum(atoi (versionstr));
     
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     char *community = lua_tostring (L, -1);
-    if (! community || !version) {
+    if (! community || (version == -1)) {
         return 0;
     }
     
@@ -189,13 +217,13 @@ static int snmp_getnext(lua_State *L)
     
     // get credentials/snmpversion for host
     lua_getglobal(L, "SNMP_VERSION");
-    int version = 0;
+    int version = -1;
     char *versionstr = lua_tostring (L, -1);
-    if (versionstr) version = atoi (versionstr);
+    if (versionstr) version = snmp_version_to_enum (atoi (versionstr));
     
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     char *community = lua_tostring (L, -1);
-    if (! community || !version) {
+    if (! community || (version == -1)) {
         return 0;
     }
     
