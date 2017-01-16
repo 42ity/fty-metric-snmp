@@ -45,10 +45,13 @@ FTY_METRIC_SNMP_EXPORT void
     credentials_destroy (credentials_t **self_p);
 
 void
-credentials_set (credentials_t *self, const char *host, int version, const char*community);
+credentials_set (credentials_t *self, int version, const char*community);
 
 const snmp_credentials_t*
-credentials_get (credentials_t *self, const char *host);
+credentials_first (credentials_t *self);
+
+const snmp_credentials_t*
+credentials_next (credentials_t *self);
 
 //  Self test of this class
 FTY_METRIC_SNMP_EXPORT void
