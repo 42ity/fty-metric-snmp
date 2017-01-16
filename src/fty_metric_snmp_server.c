@@ -35,6 +35,7 @@ struct _fty_metric_snmp_server_t {
     zlist_t *rules;
     zhash_t *host_actors;
     zpoller_t *poller;
+    credentials_t *credentials;
 };
 
 
@@ -55,6 +56,9 @@ fty_metric_snmp_server_new (void)
 
     self->host_actors = zhash_new();
     assert (self->host_actors);
+
+    self->credentials = credentials_new();
+    assert (self->credentials);
     return self;
 }
 
@@ -73,6 +77,7 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
         zlist_destroy (&self->rules);
         zhash_destroy (&self->host_actors);
         zpoller_destroy (&self->poller);
+        credentials_destroy (&self->credentials);
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -266,6 +271,12 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                         char *path = zmsg_popstr (msg);
                         assert (path);
                         fty_metric_snmp_server_load_rules (self, path);
+                        zstr_free (&path);
+                    }
+                    else if (streq (cmd, "LOADCREDENTIALS")) {
+                        char *path = zmsg_popstr (msg);
+                        assert (path);
+                        credentials_load (self->credentials, path);
                         zstr_free (&path);
                     }
                     else if (streq (cmd, "RULE")) {

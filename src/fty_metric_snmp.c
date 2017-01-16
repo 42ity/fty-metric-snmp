@@ -31,6 +31,7 @@
 static const char *ACTOR_NAME = "fty-metric-smtp";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *RULES_DIR = "./rules";
+static const char *SNMP_CONFIG_FILE = "/etc/sysconfig/fty.cfg";
 
 static int
 s_wakeup_event (zloop_t *loop, int timer_id, void *output)
@@ -68,6 +69,7 @@ int main (int argc, char *argv [])
     zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
+    zstr_sendx (server, "LOADCREDENTIALS", SNMP_CONFIG_FILE, NULL);
 
     zloop_t *wakeup = zloop_new();
     // as 5 minutes is the smallest possible reaction time

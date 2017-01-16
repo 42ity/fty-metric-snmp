@@ -53,6 +53,9 @@ credentials_first (credentials_t *self);
 const snmp_credentials_t*
 credentials_next (credentials_t *self);
 
+void
+credentials_load (credentials_t *self, char *path);
+
 //  Self test of this class
 FTY_METRIC_SNMP_EXPORT void
     credentials_test (bool verbose);
