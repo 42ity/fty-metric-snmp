@@ -24,16 +24,18 @@ Maintainer:     fty-metric-snmp Developers <eatonipcopensource@eaton.com>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9),
     pkg-config,
+    dh-autoreconf,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
     libfty-proto-dev,
     liblua5.1-0-dev,
     libnetsnmp-dev,
+# necessary for systemd.pc to get unit install path
     systemd,
     dh-systemd,
-    asciidoc-base | asciidoc, xmlto,
-    dh-autoreconf
+Build-Depends-Indep: asciidoc,
+                     xmlto
 
 Package: libfty-metric-snmp0
 Architecture: any
@@ -57,7 +59,7 @@ Description: poc 'snmp-get' server reading. development tools
 
 Package: fty-metric-snmp
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends},
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: poc 'snmp-get' server reading.
  Main package for fty-metric-snmp: poc 'snmp-get' server reading.
 

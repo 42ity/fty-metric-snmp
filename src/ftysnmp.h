@@ -1,5 +1,5 @@
 /*  =========================================================================
-    luasnmp - lua snmp extension
+    snmp - basic snmp functions
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -19,8 +19,8 @@
     =========================================================================
 */
 
-#ifndef LUASNMP_H_INCLUDED
-#define LUASNMP_H_INCLUDED
+#ifndef FTYSNMP_H_INCLUDED
+#define FTYSNMP_H_INCLUDED
 
 #include "fty_metric_snmp_classes.h"
 
@@ -29,17 +29,17 @@ extern "C" {
 #endif
 
 //  @interface
-//  Create a new luasnmp
-FTY_METRIC_SNMP_EXPORT lua_State *
-    luasnmp_new (void);
+// structure for keeping snmp credentials of any version
+typedef struct _snmp_credentials_t {
+    int version;
+    char *community;
+} snmp_credentials_t;
 
-// Destroy luasnmp
-FTY_METRIC_SNMP_EXPORT void
-    luasnmp_destroy (lua_State **self_p);
+//  snmp get function
+char *ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *credentials);
 
-//  Self test of this class
-FTY_METRIC_SNMP_EXPORT void
-    luasnmp_test (bool verbose);
+//  snmp getnext function
+void ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_t *credentials, char **resultoid, char **resultvalue);
 
 //  @end
 

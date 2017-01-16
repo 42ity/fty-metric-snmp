@@ -37,6 +37,7 @@
 #include "rule.h"
 #include "vsjson.h"
 #include "host_actor.h"
+#include "ftysnmp.h"
 #include "credentials.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
@@ -65,11 +66,12 @@ FTY_METRIC_SNMP_PRIVATE void
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
 FTY_METRIC_SNMP_PRIVATE void
-    credentials_test (bool verbose);
+    ftysnmp_test (bool verbose);
 
-//  Self test for private classes
+//  *** Draft method, defined for internal use only ***
+//  Self test of this class.
 FTY_METRIC_SNMP_PRIVATE void
-    fty_metric_snmp_private_selftest (bool verbose);
+    credentials_test (bool verbose);
 
 #endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 

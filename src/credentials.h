@@ -22,18 +22,14 @@
 #ifndef CREDENTIALS_H_INCLUDED
 #define CREDENTIALS_H_INCLUDED
 
+#include "fty_metric_snmp_classes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
 typedef struct _credentials_t credentials_t;
-
-typedef struct _snmp_credentials_t {
-    int version;
-    char *community;
-} snmp_credentials_t;
-
-
 
 //  @interface
 //  Create a new credentials
@@ -47,10 +43,10 @@ FTY_METRIC_SNMP_EXPORT void
 void
 credentials_set (credentials_t *self, int version, const char*community);
 
-const snmp_credentials_t*
+const struct _snmp_credentials_t *
 credentials_first (credentials_t *self);
 
-const snmp_credentials_t*
+const struct _snmp_credentials_t *
 credentials_next (credentials_t *self);
 
 void

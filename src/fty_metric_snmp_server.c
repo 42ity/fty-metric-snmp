@@ -221,9 +221,35 @@ fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *p
         a = (zactor_t *) zhash_next (self -> host_actors);
     }
 }
+
+const snmp_credentials_t *
+fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const char *ip)
+{
+    const snmp_credentials_t *cr = credentials_first (self->credentials);
+    const char *startoid = ".1";
+    char *oid, *value;
+    
+    while (cr) {
+        ftysnmp_getnext (
+            ip,
+            startoid,
+            cr,
+            &oid,
+            &value
+        );
+        if (oid && value) {
+            free (oid);
+            free (value);
+            return cr;
+        }
+        cr = credentials_next (self->credentials);
+    }
+    return NULL;
+}
+
+
 //  --------------------------------------------------------------------------
 //  Main fty_metric_snmp_server actor
-
 void
 fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t *pipe)
 {
