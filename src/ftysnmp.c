@@ -20,7 +20,7 @@
 */
 
 #include "fty_metric_snmp_classes.h"
-//#include "ftysnmp.h"
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
