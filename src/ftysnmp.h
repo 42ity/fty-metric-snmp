@@ -1,7 +1,7 @@
 /*  =========================================================================
     snmp - basic snmp functions
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -27,17 +27,22 @@ extern "C" {
 #endif
 
 //  @interface
-// structure for keeping snmp credentials of any version
+//  structure for keeping SNMP credentials of any version
 typedef struct _snmp_credentials_t {
     int version;
     char *community;
 } snmp_credentials_t;
 
 //  snmp get function
-char *ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *credentials);
+FTY_METRIC_SNMP_PRIVATE char *
+    ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *credentials);
 
 //  snmp getnext function
-void ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_t *credentials, char **resultoid, char **resultvalue);
+FTY_METRIC_SNMP_PRIVATE void
+    ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_t *credentials, char **resultoid, char **resultvalue);
+
+FTY_METRIC_SNMP_PRIVATE void
+    ftysnmp_test (bool verbose);
 
 //  @end
 

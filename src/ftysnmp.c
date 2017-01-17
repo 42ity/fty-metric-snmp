@@ -1,7 +1,7 @@
 /*  =========================================================================
     luasnmp - lua snmp extension
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -19,7 +19,8 @@
     =========================================================================
 */
 
-#include "ftysnmp.h"
+#include "fty_metric_snmp_classes.h"
+//#include "ftysnmp.h"
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
@@ -27,6 +28,9 @@
 #include <stdbool.h>
 
 typedef u_long myoid;
+
+//  --------------------------------------------------------------------------
+//  Convert SNMP version (1, 2, 3) to net-snmp enums
 
 int snmp_version_to_enum (int version)
 {
@@ -42,6 +46,9 @@ int snmp_version_to_enum (int version)
     }
 }
 
+//  --------------------------------------------------------------------------
+//  Convert net-snmp version enums to number (1, 2, 3)
+
 int snmp_enum_to_version (int version)
 {
     switch (version) {
@@ -56,6 +63,9 @@ int snmp_enum_to_version (int version)
     }
 }
 
+//  --------------------------------------------------------------------------
+//  Convert net-snmp oid to char * string like ".1.3.4.6"
+
 char *oid_to_sring (myoid anOID[], int len)
 {
     char buffer[1024];
@@ -66,6 +76,9 @@ char *oid_to_sring (myoid anOID[], int len)
     return strdup (buffer);
 }
 
+//  --------------------------------------------------------------------------
+//  Converts net-snmp value into string
+
 char *var_to_sring (const netsnmp_variable_list *variable)
 {
     char buffer[1024];
@@ -74,6 +87,9 @@ char *var_to_sring (const netsnmp_variable_list *variable)
     if(snprint_value(buffer, sizeof(buffer)-1, variable->name, variable->name_length, variable) == -1) return NULL;
     return strdup (buffer);
 }
+
+//  --------------------------------------------------------------------------
+//  snmp get version 1 and 2c
 
 char* ftysnmp_get_v12 (const char* host, const char *oid, const snmp_credentials_t* credentials)
 {
@@ -110,6 +126,9 @@ char* ftysnmp_get_v12 (const char* host, const char *oid, const snmp_credentials
     snmp_close(ss);
     return result;
 }
+
+//  --------------------------------------------------------------------------
+//  snmp get-next version 1 and 2c
 
 void ftysnmp_getnext_v12 (const char* host, const char *oid, const snmp_credentials_t* credentials, char **resultoid, char **resultvalue)
 {
@@ -160,7 +179,9 @@ void ftysnmp_getnext_v12 (const char* host, const char *oid, const snmp_credenti
     snmp_close(ss);
 }
 
+//  --------------------------------------------------------------------------
 //  snmp get function
+
 char *ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *credentials)
 {
     if (!host || !oid || !credentials) return NULL;
@@ -172,7 +193,9 @@ char *ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *
     return ftysnmp_get_v12 (host, oid, credentials);
 }
 
+//  --------------------------------------------------------------------------
 //  snmp getnext function
+
 void ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_t *credentials, char **resultoid, char **resultvalue)
 {
     if (!host || !oid || !credentials || !resultoid || !resultvalue) {
@@ -188,7 +211,10 @@ void ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_
     ftysnmp_getnext_v12 (host, oid, credentials, resultoid, resultvalue);
 }
 
-void snmp_test (bool verbose)
+//  --------------------------------------------------------------------------
+//  Self test of this class
+
+void ftysnmp_test (bool verbose)
 {
     //@ test is empty 
 }
