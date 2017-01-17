@@ -22,8 +22,6 @@
 #ifndef FTYSNMP_H_INCLUDED
 #define FTYSNMP_H_INCLUDED
 
-#include "fty_metric_snmp_classes.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

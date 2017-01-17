@@ -19,9 +19,9 @@
     =========================================================================
 */
 
+#include "ftysnmp.h"
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
-#include "ftysnmp.h"
 
 #include <stdio.h>
 #include <stdbool.h>

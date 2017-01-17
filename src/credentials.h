@@ -43,10 +43,10 @@ FTY_METRIC_SNMP_EXPORT void
 void
 credentials_set (credentials_t *self, int version, const char*community);
 
-const struct _snmp_credentials_t *
+const snmp_credentials_t *
 credentials_first (credentials_t *self);
 
-const struct _snmp_credentials_t *
+const snmp_credentials_t *
 credentials_next (credentials_t *self);
 
 void
