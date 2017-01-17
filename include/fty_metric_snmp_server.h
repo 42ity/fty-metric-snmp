@@ -1,7 +1,7 @@
 /*  =========================================================================
-    fty_metric_snmp_server - Actor
+    fty_metric_snmp_server - Main actor
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -39,7 +39,7 @@ FTY_METRIC_SNMP_EXPORT void
 FTY_METRIC_SNMP_EXPORT void
     fty_metric_snmp_server_test (bool verbose);
 
-//  Server main actor
+//  Zactor interface of main actor
 FTY_METRIC_SNMP_EXPORT void
     fty_metric_snmp_server_actor (zsock_t *pipe, void *args);
 

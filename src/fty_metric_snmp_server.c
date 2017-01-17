@@ -1,7 +1,7 @@
 /*  =========================================================================
-    fty_metric_snmp_server - Actor
+    fty_metric_snmp_server - Main actor
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -21,7 +21,7 @@
 
 /*
 @header
-    fty_metric_snmp_server - Actor
+    fty_metric_snmp_server - Main actor
 @discuss
 @end
 */
@@ -84,6 +84,9 @@ fty_metric_snmp_server_destroy (fty_metric_snmp_server_t **self_p)
     }
 }
 
+//  --------------------------------------------------------------------------
+//  Add one json-encoded rule to list of rules
+
 void
 fty_metric_snmp_server_add_rule (fty_metric_snmp_server_t *self, const char *json)
 {
@@ -97,6 +100,9 @@ fty_metric_snmp_server_add_rule (fty_metric_snmp_server_t *self, const char *jso
         rule_destroy (&rule);
     }
 }
+
+//  --------------------------------------------------------------------------
+//  Load all rules in directory. Rule MUST have ".json" extension.
 
 void
 fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *path)
@@ -128,14 +134,9 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
     closedir(dir);
 }
 
-void zlist_print(zlist_t* list)
-{
-    char *s = (char *)zlist_first (list);
-    while (s) {
-        zsys_debug (" * %s", s);
-        s = (char *)zlist_next (list);
-    }
-}
+//  --------------------------------------------------------------------------
+//  Function returns true if function should be evaluated for particular asset.
+//  This is decided by asset name (json "assets": []) or group (json "groups":[])
 
 int
 is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
@@ -163,6 +164,9 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     return 0;
 }
 
+//  --------------------------------------------------------------------------
+//  Try SNMP credentials with this host and return first working.
+
 const snmp_credentials_t *
 fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const char *ip)
 {
@@ -188,6 +192,9 @@ fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const
     return NULL;
 }
 
+//  --------------------------------------------------------------------------
+//  When asset message comes, function creates new host_actor if not exists.
+
 zactor_t *
 fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
 {
@@ -198,7 +205,8 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
     const char *ip = (char *)zhash_lookup (ext, "ip.1");
     if (!ip) return NULL;
     if (zhash_lookup (self->host_actors, assetname)) {
-        //already exists
+        // already exists
+        // TODO: implement also update
         return NULL;
     }
     zactor_t *host = NULL;
@@ -237,11 +245,18 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
     return host;
 }
 
+//  --------------------------------------------------------------------------
+//  Functions removes an actor when asset is deleted
+
 zactor_t *
 fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
 {
+    // TODO: implement removing
     return NULL;
 }
+
+//  --------------------------------------------------------------------------
+//  Update poller to have all existing sockets, pipes and actors
 
 void
 fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *pipe)
@@ -389,6 +404,9 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
         }
     }
 }
+
+//  --------------------------------------------------------------------------
+//  Zactor interface
 
 void
 fty_metric_snmp_server_actor(zsock_t *pipe, void *args)
