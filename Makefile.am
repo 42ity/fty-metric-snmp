@@ -31,15 +31,20 @@ noinst_PROGRAMS =
 check_PROGRAMS =
 noinst_LTLIBRARIES =
 TESTS =
+EXTRA_DIST =
 
-EXTRA_DIST = \
-    CMakeLists.txt \
+if ENABLE_DIST_CMAKEFILES
+EXTRA_DIST += \
     Findlibzmq.cmake \
     Findczmq.cmake \
     Findmalamute.cmake \
     Findftyproto.cmake \
     Findlua.cmake \
     Findnetsnmp.cmake \
+    CMakeLists.txt
+endif
+
+EXTRA_DIST += \
     src/luasnmp.h \
     src/rule.h \
     src/vsjson.h \

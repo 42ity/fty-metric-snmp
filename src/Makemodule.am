@@ -27,6 +27,11 @@ src_libfty_metric_snmp_la_SOURCES = \
     src/fty_metric_snmp_server.c \
     src/platform.h
 
+if ENABLE_DRAFTS
+src_libfty_metric_snmp_la_SOURCES += \
+    src/fty_metric_snmp_private_selftest.c
+endif
+
 src_libfty_metric_snmp_la_CPPFLAGS = ${AM_CPPFLAGS}
 
 src_libfty_metric_snmp_la_LDFLAGS = \

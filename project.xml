@@ -1,8 +1,7 @@
 <project
     name = "fty-metric-snmp"
-    description = "PoC 'snmp-get' server reading."
+    description = "agent for getting measurements using LUA and SNMP"
     script = "zproject.gsl"
-    email = "EatonIPCOpenSource@eaton.com"
     >
 
     <target name = "debian" />

@@ -55,6 +55,11 @@ FTY_METRIC_SNMP_PRIVATE const snmp_credentials_t *
 //  Load credentials from zconfig file.
 FTY_METRIC_SNMP_PRIVATE void
     credentials_load (credentials_t *self, char *path);
+
+//  Self test of this class
+FTY_METRIC_SNMP_PRIVATE void
+    credentials_test (bool verbose);
+
 //  @end
 
 #ifdef __cplusplus

@@ -42,6 +42,7 @@ fty_metric_snmp_private_selftest (bool verbose)
     rule_test (verbose);
     vsjson_test (verbose);
     host_actor_test (verbose);
+    ftysnmp_test (verbose);
     credentials_test (verbose);
 }
 /*
