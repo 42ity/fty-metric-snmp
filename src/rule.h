@@ -30,33 +30,48 @@ typedef struct _rule_t rule_t;
 
 //  @interface
 //  Create a new rule
-FTY_METRIC_SNMP_EXPORT rule_t *
+FTY_METRIC_SNMP_PRIVATE rule_t *
     rule_new (void);
 
 //  Destroy the rule
-FTY_METRIC_SNMP_EXPORT void
+FTY_METRIC_SNMP_PRIVATE void
     rule_destroy (rule_t **self_p);
 
 //  Self test of this class
-FTY_METRIC_SNMP_EXPORT void
+FTY_METRIC_SNMP_PRIVATE void
     rule_test (bool verbose);
 
-int rule_parse (rule_t *self, const char *json);
+//  Parse JSON into rule.
+FTY_METRIC_SNMP_PRIVATE int
+    rule_parse (rule_t *self, const char *json);
 
-int rule_load (rule_t *self, const char *path);
+//  Load json rule from file
+FTY_METRIC_SNMP_PRIVATE int
+    rule_load (rule_t *self, const char *path);
 
-zlist_t *rule_assets (rule_t *self);
+//  Get the list of assets for which this rule should be applied
+FTY_METRIC_SNMP_PRIVATE zlist_t *
+    rule_assets (rule_t *self);
 
-zlist_t *rule_groups (rule_t *self);
+//  Get the list of groups for which this rule should be applied
+FTY_METRIC_SNMP_PRIVATE zlist_t *
+    rule_groups (rule_t *self);
 
-const char *rule_name (rule_t *self);
+//  Get rule name
+FTY_METRIC_SNMP_PRIVATE const char *
+    rule_name (rule_t *self);
 
-const char *rule_evaluation (rule_t *self);
+//  Get the evaluation function
+FTY_METRIC_SNMP_PRIVATE const char *
+    rule_evaluation (rule_t *self);
 
-void rule_freefn (void *self);
+//  freefn for zhash/zlist
+FTY_METRIC_SNMP_PRIVATE void
+    rule_freefn (void *self);
 //  @end
 
-void vsjson_test (bool verbose);
+FTY_METRIC_SNMP_PRIVATE void
+    vsjson_test (bool verbose);
 
 #ifdef __cplusplus
 }

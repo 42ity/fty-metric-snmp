@@ -57,7 +57,8 @@ rule_new (void)
 }
 
 //  --------------------------------------------------------------------------
-//  Parse JSON into rule
+//  Parse JSON into rule callback. See vsjson class.
+
 int rule_json_callback (const char *locator, const char *value, void *data)
 {
     if (!data) return 1;
@@ -88,10 +89,16 @@ int rule_json_callback (const char *locator, const char *value, void *data)
     return 0;
 }
 
+//  --------------------------------------------------------------------------
+//  Parse JSON into rule.
+
 int rule_parse (rule_t *self, const char *json)
 {
     return vsjson_parse (json, rule_json_callback, self);
 }
+
+//  --------------------------------------------------------------------------
+//  Load json rule from file
 
 int rule_load (rule_t *self, const char *path)
 {
@@ -134,6 +141,9 @@ rule_destroy (rule_t **self_p)
     }
 }
 
+//  --------------------------------------------------------------------------
+//  freefn for zhash/zlist
+
 void
 rule_freefn (void *self)
 {
@@ -142,11 +152,17 @@ rule_freefn (void *self)
     rule_destroy (&rulep);
 }
 
+//  --------------------------------------------------------------------------
+//  Get the evaluation function
+
 const char *rule_evaluation (rule_t *self)
 {
     if (!self) return NULL;
     return self->evaluation;
 }
+
+//  --------------------------------------------------------------------------
+//  Get the list of assets for which this rule should be applied
 
 zlist_t *rule_assets (rule_t *self)
 {
@@ -154,11 +170,17 @@ zlist_t *rule_assets (rule_t *self)
     return self->assets;
 }
 
+//  --------------------------------------------------------------------------
+//  Get the list of groups for which this rule should be applied
+
 zlist_t *rule_groups (rule_t *self)
 {
     if (!self) return NULL;
     return self->groups;
 }
+
+//  --------------------------------------------------------------------------
+//  Get rule name
 
 const char *rule_name (rule_t *self)
 {
@@ -193,4 +215,3 @@ vsjson_test (bool verbose)
     //  @end
     printf ("OK\n");
 }
-
