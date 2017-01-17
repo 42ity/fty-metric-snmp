@@ -32,6 +32,7 @@ static const char *ACTOR_NAME = "fty-metric-smtp";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *RULES_DIR = "./rules";
 static const char *SNMP_CONFIG_FILE = "/etc/sysconfig/fty.cfg";
+static int POLLING = 60;
 
 static int
 s_wakeup_event (zloop_t *loop, int timer_id, void *output)
@@ -45,17 +46,46 @@ int main (int argc, char *argv [])
     bool verbose = false;
     int argn;
     for (argn = 1; argn < argc; argn++) {
-        if (streq (argv [argn], "--help")
-        ||  streq (argv [argn], "-h")) {
+        const char *param = NULL;
+        if (argn < argc - 1) param = argv [argn+1];
+        
+        if (streq (argv [argn], "--help") ||  streq (argv [argn], "-h")) {
             puts ("fty-metric-snmp [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --help / -h            this information");
+            puts ("  --endpoint / -e        malamute endpoint [ipc://@/malamute]");
+            puts ("  --snmpconfig / -c      config file with SNMP communities [/etc/sysconfig/fty.cfg]");
+            puts ("  --rules / -r           directory with rules [./rules]");
+            puts ("  --polling / -p         polling interval in seconds [60]");
             return 0;
         }
-        else
-        if (streq (argv [argn], "--verbose")
-        ||  streq (argv [argn], "-v"))
+        else if (streq (argv [argn], "--verbose") ||  streq (argv [argn], "-v")) {
             verbose = true;
+        }
+        else if (streq (argv [argn], "--endpoint") || streq (argv [argn], "-e")) {
+            if (param) ENDPOINT = param;
+            ++argn;
+        }
+        else if (streq (argv [argn], "--snmpconfig") || streq (argv [argn], "-c")) {
+            if (param) SNMP_CONFIG_FILE = param;
+            ++argn;
+        }
+        else if (streq (argv [argn], "--polling") || streq (argv [argn], "-p")) {
+            if (param) {
+                errno = 0;
+                long int i = strtol (param, NULL, 10);
+                if (errno) {
+                    zsys_error ("Invalid polling interval %s", param);
+                } else {
+                    POLLING = i;
+                }
+            }
+            ++argn;
+        }
+        else if (streq (argv [argn], "--rules") || streq (argv [argn], "-r")) {
+            if (param) RULES_DIR = param;
+            ++argn;
+        }
         else {
             printf ("Unknown option: %s\n", argv [argn]);
             return 1;
@@ -72,15 +102,15 @@ int main (int argc, char *argv [])
     zstr_sendx (server, "LOADCREDENTIALS", SNMP_CONFIG_FILE, NULL);
 
     zloop_t *wakeup = zloop_new();
-    // as 5 minutes is the smallest possible reaction time
-    zloop_timer (wakeup, 5000, 0, s_wakeup_event, server);
+    zloop_timer (wakeup, POLLING * 1000, 0, s_wakeup_event, server);
     zloop_start (wakeup);
+    
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);
         zmsg_destroy (&msg);
     }
+    
     zloop_destroy (&wakeup);
-
     zactor_destroy (&server);
     if (verbose)
         zsys_info ("fty_metric_snmp - exited");
