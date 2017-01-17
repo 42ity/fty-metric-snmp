@@ -1,7 +1,7 @@
 /*  =========================================================================
     luasnmp - lua snmp extension
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 //  @interface
-//  Create a new luasnmp
+//  Create a new lua state with SNMP support
 FTY_METRIC_SNMP_EXPORT lua_State *
     luasnmp_new (void);
 

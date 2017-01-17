@@ -1,7 +1,7 @@
 /*  =========================================================================
     luasnmp - lua snmp extension
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -30,10 +30,17 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
+
+//  --------------------------------------------------------------------------
+//  Init net-snmp library
+
 void luasnmp_init()
 {
     init_snmp("fty-snmp-client");
 }
+
+//  --------------------------------------------------------------------------
+//  SNMP get lua binding
 
 static int lua_snmp_get(lua_State *L)
 {
@@ -65,6 +72,9 @@ static int lua_snmp_get(lua_State *L)
         return 0;
     }
 }
+
+//  --------------------------------------------------------------------------
+//  SNMP get-next lua binding
 
 static int lua_snmp_getnext(lua_State *L)
 {
@@ -103,11 +113,17 @@ static int lua_snmp_getnext(lua_State *L)
 }
 
 
+//  --------------------------------------------------------------------------
+//  Register SNMP functions in lua
+
 void extend_lua_of_snmp(lua_State *L)
 {
     lua_register (L, "snmp_get", lua_snmp_get);
     lua_register (L, "snmp_getnext", lua_snmp_getnext);
 }
+
+//  --------------------------------------------------------------------------
+//  Create a new lua state with SNMP support
 
 lua_State *luasnmp_new (void)
 {
@@ -122,12 +138,18 @@ lua_State *luasnmp_new (void)
     return l;
 }
 
+//  --------------------------------------------------------------------------
+//  Destroy luasnmp
+
 void luasnmp_destroy (lua_State **self_p)
 {
     if (!self_p || !*self_p) return;
     lua_close (*self_p);
     *self_p = NULL;
 }
+
+//  --------------------------------------------------------------------------
+//  Selftest is empty
 
 void luasnmp_test (bool verbose)
 {
