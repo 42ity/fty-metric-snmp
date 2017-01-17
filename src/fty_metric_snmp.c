@@ -100,7 +100,14 @@ int main (int argc, char *argv [])
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
     zstr_sendx (server, "LOADCREDENTIALS", SNMP_CONFIG_FILE, NULL);
-
+    char *ttl;
+    // ttl = 2.5 * POLLING
+    asprintf (&ttl, "%i", POLLING * 5 / 2);
+    if (ttl) {
+        zstr_sendx (server, "TTL", ttl, NULL);
+        zstr_free (&ttl);
+    }
+    
     zloop_t *wakeup = zloop_new();
     zloop_timer (wakeup, POLLING * 1000, 0, s_wakeup_event, server);
     zloop_start (wakeup);

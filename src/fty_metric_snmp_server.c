@@ -263,6 +263,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
 {
     if (!self || !pipe) return;
 
+    int ttl = 60;
     fty_metric_snmp_server_update_poller (self, pipe);
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
@@ -311,6 +312,12 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                         assert (path);
                         credentials_load (self->credentials, path);
                         zstr_free (&path);
+                    }
+                    else if (streq (cmd, "TTL")) {
+                        char *ttlstr = zmsg_popstr (msg);
+                        assert (ttlstr);
+                        ttl = atoi (ttlstr);
+                        zstr_free (&ttlstr);
                     }
                     else if (streq (cmd, "RULE")) {
                         char *json = zmsg_popstr (msg);
@@ -367,7 +374,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                 if (type && element && value && units) {
                     char *topic;
                     asprintf(&topic, "%s@%s", type, element);
-                    zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, 60);
+                    zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, ttl);
                     mlm_client_send (self->mlm, topic, &metric);
                     zmsg_destroy (&metric);
                     zstr_free (&topic);
@@ -417,6 +424,7 @@ fty_metric_snmp_server_test (bool verbose)
     zstr_sendx (server, "BIND", endpoint, "me", NULL);
     zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_METRICS, NULL);
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
+    zstr_sendx (server, "TTL", "100", NULL);
 
     static const char *rule =
         "{"
@@ -431,7 +439,8 @@ fty_metric_snmp_server_test (bool verbose)
         " \""
         "}";
     zstr_sendx (server, "RULE", rule, NULL);
-
+    zclock_sleep (1000);
+    
     mlm_client_t *asset = mlm_client_new ();
     mlm_client_connect (asset, endpoint, 5000, "assetsource");
     mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
