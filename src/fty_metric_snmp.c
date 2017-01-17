@@ -1,7 +1,7 @@
 /*  =========================================================================
-    fty_metric_snmp - description
+    fty_metric_snmp - agent for getting measurements using LUA and SNMP
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -21,7 +21,7 @@
 
 /*
 @header
-    fty_metric_snmp - 
+    fty_metric_snmp - agent for getting measurements using LUA and SNMP
 @discuss
 @end
 */
