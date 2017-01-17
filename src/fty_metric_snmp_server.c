@@ -163,6 +163,31 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     return 0;
 }
 
+const snmp_credentials_t *
+fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const char *ip)
+{
+    const snmp_credentials_t *cr = credentials_first (self->credentials);
+    const char *startoid = ".1";
+    char *oid, *value;
+    
+    while (cr) {
+        ftysnmp_getnext (
+            ip,
+            startoid,
+            cr,
+            &oid,
+            &value
+        );
+        if (oid && value) {
+            free (oid);
+            free (value);
+            return cr;
+        }
+        cr = credentials_next (self->credentials);
+    }
+    return NULL;
+}
+
 zactor_t *
 fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
 {
@@ -197,7 +222,16 @@ fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t
     zsys_debug ("deploying actor for %s", assetname);
     zstr_sendx (host, "ASSETNAME", assetname, NULL);
     zstr_sendx (host, "IP", ip, NULL);
-    zstr_sendx (host, "CREDENTIALS", "1", "public", NULL);
+    const snmp_credentials_t *cr = fty_metric_snmp_server_detect_credentials (self, ip);
+    if (cr) {
+        char *versionstr;
+        asprintf (&versionstr, "%i", cr->version);
+        zstr_sendx (host, "CREDENTIALS", versionstr, cr->community, NULL);
+        zstr_free (&versionstr);
+    } else {
+        zsys_error ("Can't detect SNMP credentials for %s", assetname);
+        zstr_sendx (host, "CREDENTIALS", "0", "", NULL);
+    }
     zhash_insert (self->host_actors, assetname, host);
     zhash_freefn (self->host_actors, assetname, host_actor_freefn);
     return host;
@@ -222,32 +256,6 @@ fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *p
     }
 }
 
-const snmp_credentials_t *
-fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const char *ip)
-{
-    const snmp_credentials_t *cr = credentials_first (self->credentials);
-    const char *startoid = ".1";
-    char *oid, *value;
-    
-    while (cr) {
-        ftysnmp_getnext (
-            ip,
-            startoid,
-            cr,
-            &oid,
-            &value
-        );
-        if (oid && value) {
-            free (oid);
-            free (value);
-            return cr;
-        }
-        cr = credentials_next (self->credentials);
-    }
-    return NULL;
-}
-
-
 //  --------------------------------------------------------------------------
 //  Main fty_metric_snmp_server actor
 void
@@ -256,7 +264,6 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
     if (!self || !pipe) return;
 
     fty_metric_snmp_server_update_poller (self, pipe);
-    // TODO: read list of communities (zconfig)
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
         zsock_t *which = (zsock_t *) zpoller_wait (self -> poller, -1);
@@ -312,7 +319,6 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                         zstr_free (&json);
                     }
                     else if (streq (cmd, "WAKEUP")) {
-                        zsys_debug ("WAKEUP");
                         zactor_t *a = (zactor_t *) zhash_first (self -> host_actors);
                         while (a) {
                             zstr_send (a, "WAKEUP");
@@ -443,17 +449,42 @@ fty_metric_snmp_server_test (bool verbose)
     zhash_destroy (&ext);
     mlm_client_send (asset, "myasset", &assetmsg);
     zmsg_destroy (&assetmsg);
+
+    ext = zhash_new();
+    zhash_autofree (ext);
+    zhash_insert (ext, "ip.1", "127.0.0.1");
+    zhash_insert (ext, "group.1", "mygroup");
+    assetmsg = fty_proto_encode_asset (
+        NULL,
+        "somedev",
+        "update",
+        ext
+    );
+    zhash_destroy (&ext);
+    mlm_client_send (asset, "myasset", &assetmsg);
+    zmsg_destroy (&assetmsg);
+    
     zclock_sleep (1000);
 
     zstr_send (server, "WAKEUP");
     zclock_sleep (1000);
-    zmsg_t *received = mlm_client_recv (asset);
-    assert (received);
-    fty_proto_t *metric = fty_proto_decode (&received);
-    fty_proto_print (metric);
-    
-    fty_proto_destroy (&metric);
-    zmsg_destroy (&received);
+
+    {
+        zmsg_t *received = mlm_client_recv (asset);
+        assert (received);
+        fty_proto_t *metric = fty_proto_decode (&received);
+        fty_proto_print (metric);
+        fty_proto_destroy (&metric);
+        zmsg_destroy (&received);
+    }
+    {
+        zmsg_t *received = mlm_client_recv (asset);
+        assert (received);
+        fty_proto_t *metric = fty_proto_decode (&received);
+        fty_proto_print (metric);
+        fty_proto_destroy (&metric);
+        zmsg_destroy (&received);
+    }
 
     mlm_client_destroy (&asset);
     zactor_destroy (&server);
