@@ -4,7 +4,7 @@
     Runs all private classes selftests.
 
     -------------------------------------------------------------------------
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
