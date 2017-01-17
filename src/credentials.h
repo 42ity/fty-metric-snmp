@@ -1,7 +1,7 @@
 /*  =========================================================================
     credentials - list of snmp credentials
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                        
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -33,29 +33,28 @@ typedef struct _credentials_t credentials_t;
 
 //  @interface
 //  Create a new credentials
-FTY_METRIC_SNMP_EXPORT credentials_t *
+FTY_METRIC_SNMP_PRIVATE credentials_t *
     credentials_new (void);
 
 //  Destroy the credentials
-FTY_METRIC_SNMP_EXPORT void
+FTY_METRIC_SNMP_PRIVATE void
     credentials_destroy (credentials_t **self_p);
 
-void
-credentials_set (credentials_t *self, int version, const char*community);
+//  Add new credentials for SNMP version 1 and 2c
+FTY_METRIC_SNMP_PRIVATE void
+    credentials_set (credentials_t *self, int version, const char*community);
 
-const snmp_credentials_t *
-credentials_first (credentials_t *self);
+//  Get first credentials in list or NULL if empty.
+FTY_METRIC_SNMP_PRIVATE const snmp_credentials_t *
+    credentials_first (credentials_t *self);
 
-const snmp_credentials_t *
-credentials_next (credentials_t *self);
+//  Get next credentials in list or NULL if we reached end of list.
+FTY_METRIC_SNMP_PRIVATE const snmp_credentials_t *
+    credentials_next (credentials_t *self);
 
-void
-credentials_load (credentials_t *self, char *path);
-
-//  Self test of this class
-FTY_METRIC_SNMP_EXPORT void
-    credentials_test (bool verbose);
-
+//  Load credentials from zconfig file.
+FTY_METRIC_SNMP_PRIVATE void
+    credentials_load (credentials_t *self, char *path);
 //  @end
 
 #ifdef __cplusplus

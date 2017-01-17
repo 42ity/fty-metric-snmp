@@ -1,7 +1,7 @@
 /*  =========================================================================
     credentials - list of snmp credentials
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                        
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -23,17 +23,22 @@
 @header
     credentials - list of snmp credentials
 @discuss
+    This class holds all possible credentials readed from config file.
+    Class is used to iterate trough credentials when new host appears
+    to find valid credentials for this particular host
+
+    TODO: support SNMPv3
 @end
 */
 
 #include "fty_metric_snmp_classes.h"
 
-//  Structure of our class
-
+//  Structure of credential list
 struct _credentials_t {
     zlist_t *credentials;
 };
 
+//  --------------------------------------------------------------------------
 // Free snmp credentials
 void free_snmp_credentials(void *c) {
     if (!c) return;
@@ -44,7 +49,6 @@ void free_snmp_credentials(void *c) {
 
 //  --------------------------------------------------------------------------
 //  Create a new credentials
-
 credentials_t *
 credentials_new (void)
 {
@@ -54,6 +58,8 @@ credentials_new (void)
     return self;
 }
 
+//  --------------------------------------------------------------------------
+//  Add new credentials for SNMP version 1 and 2c
 void
 credentials_set (credentials_t *self, int version, const char*community)
 {
@@ -67,6 +73,8 @@ credentials_set (credentials_t *self, int version, const char*community)
     zlist_freefn (self->credentials, sc, free_snmp_credentials, true);
 }
 
+//  --------------------------------------------------------------------------
+//  Get first credentials in list or NULL if empty.
 const snmp_credentials_t*
 credentials_first (credentials_t *self)
 {
@@ -74,6 +82,8 @@ credentials_first (credentials_t *self)
     return (snmp_credentials_t *)zlist_first(self->credentials);
 }
 
+//  --------------------------------------------------------------------------
+//  Get next credentials in list or NULL if we reached end of list.
 const snmp_credentials_t*
 credentials_next (credentials_t *self)
 {
@@ -81,6 +91,8 @@ credentials_next (credentials_t *self)
     return (snmp_credentials_t *)zlist_next(self->credentials);
 }
 
+//  --------------------------------------------------------------------------
+//  Load credentials from zconfig file.
 void
 credentials_load (credentials_t *self, char *path)
 {
@@ -102,8 +114,7 @@ credentials_load (credentials_t *self, char *path)
 }
 
 //  --------------------------------------------------------------------------
-//  Destroy the credentials
-
+//  Destroy the credentials class
 void
 credentials_destroy (credentials_t **self_p)
 {
@@ -118,7 +129,6 @@ credentials_destroy (credentials_t **self_p)
 
 //  --------------------------------------------------------------------------
 //  Self test of this class
-
 void
 credentials_test (bool verbose)
 {
