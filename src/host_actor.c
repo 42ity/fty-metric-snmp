@@ -1,7 +1,7 @@
 /*  =========================================================================
     host_actor - Actor testing one host
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -45,6 +45,9 @@ struct _host_actor_t {
     zhash_t *functions;
 };
 
+//  --------------------------------------------------------------------------
+//  Create a new host actor
+
 host_actor_t *
 host_actor_new ()
 {
@@ -53,6 +56,9 @@ host_actor_new ()
     self -> functions = zhash_new ();
     return self;
 }
+
+//  --------------------------------------------------------------------------
+//  Destroy a host actor
 
 void
 host_actor_destroy (host_actor_t **self_p)
@@ -69,11 +75,17 @@ host_actor_destroy (host_actor_t **self_p)
     *self_p = NULL;
 }
 
+//  --------------------------------------------------------------------------
+//  Remove lua function
+
 void host_actor_remove_function (host_actor_t *self, const char *name)
 {
     if (!self || ! name) return;
     zhash_delete (self->functions, name);
 }
+
+//  --------------------------------------------------------------------------
+//  Remove lua function
 
 void host_actor_remove_functions (host_actor_t *self)
 {
@@ -98,6 +110,7 @@ void zhash_lua_free (void *data) {
 
 //  --------------------------------------------------------------------------
 //  compile lua function and add it to list
+
 void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
 {
     zsys_debug ("adding lua func");
@@ -118,6 +131,9 @@ void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, co
     zhash_freefn (functions, name, zhash_lua_free);
     zsys_debug ("New function '%s' created", name);
 }
+
+//  --------------------------------------------------------------------------
+//  evaluate one function and send metric messages
 
 void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_t *pipe)
 {
@@ -162,8 +178,9 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
         }
     }
 }
+
 //  --------------------------------------------------------------------------
-//  actor function
+//  actor main loop
 
 void
 host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
@@ -231,6 +248,9 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
     }
 }
 
+//  --------------------------------------------------------------------------
+//  actor function
+
 void host_actor (zsock_t *pipe, void *args)
 {
     host_actor_t *self = host_actor_new();
@@ -238,6 +258,9 @@ void host_actor (zsock_t *pipe, void *args)
     host_actor_main_loop (self, pipe);
     host_actor_destroy (&self);
 }
+
+//  --------------------------------------------------------------------------
+//  actor freefn for zhash/zlist
 
 void host_actor_freefn (void *self)
 {
