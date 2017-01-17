@@ -19,6 +19,9 @@
     =========================================================================
 */
 
+
+#include "luasnmp.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <lua.h>
@@ -26,8 +29,6 @@
 #include <lualib.h>
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
-
-#include "luasnmp.h"
 
 void luasnmp_init()
 {
@@ -67,8 +68,8 @@ static int lua_snmp_get(lua_State *L)
 
 static int lua_snmp_getnext(lua_State *L)
 {
-	char* host = lua_tostring(L, 1);
-	char* oid = lua_tostring(L, 2);
+    char* host = lua_tostring(L, 1);
+    char* oid = lua_tostring(L, 2);
     if (!host || !oid ) {
         return 0;
     }
