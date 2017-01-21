@@ -250,6 +250,7 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
                     zhash_insert (self->host_actors, assetname, host);
                     zhash_freefn (self->host_actors, assetname, host_actor_freefn);
                     zstr_sendx (host, "ASSETNAME", assetname, NULL);
+                    fty_metric_snmp_server_update_poller (self, pipe);
                 }
                 zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
                 zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
