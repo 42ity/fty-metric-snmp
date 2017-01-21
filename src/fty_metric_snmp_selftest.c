@@ -36,11 +36,8 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-// Tests for stable public classes:
     { "fty_metric_snmp_server", fty_metric_snmp_server_test },
-#ifdef FTY_METRIC_SNMP_BUILD_DRAFT_API
-    { "private_classes", fty_metric_snmp_private_selftest },
-#endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
+    { "rule_tester", rule_tester_test },
     {0, 0}          //  Sentinel
 };
 
@@ -98,15 +95,21 @@ main (int argc, char **argv)
         else
         if (streq (argv [argn], "--number")
         ||  streq (argv [argn], "-n")) {
-            puts ("7");
+            puts ("8");
             return 0;
         }
         else
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
-            puts ("    fty_metric_snmp_server\t\t- stable");
-            puts ("    private_classes\t- draft");
+            puts ("    luasnmp");
+            puts ("    rule");
+            puts ("    vsjson");
+            puts ("    host_actor");
+            puts ("    ftysnmp");
+            puts ("    credentials");
+            puts ("    fty_metric_snmp_server");
+            puts ("    rule_tester");
             return 0;
         }
         else

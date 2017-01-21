@@ -74,16 +74,13 @@
 //  These classes are stable or legacy and built in all releases
 typedef struct _fty_metric_snmp_server_t fty_metric_snmp_server_t;
 #define FTY_METRIC_SNMP_SERVER_T_DEFINED
+typedef struct _rule_tester_t rule_tester_t;
+#define RULE_TESTER_T_DEFINED
 
 
 //  Public classes, each with its own header file
 #include "fty_metric_snmp_server.h"
-
-#ifdef FTY_METRIC_SNMP_BUILD_DRAFT_API
-//  Self test for private classes
-FTY_METRIC_SNMP_EXPORT void
-    fty_metric_snmp_private_selftest (bool verbose);
-#endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
+#include "rule_tester.h"
 
 #endif
 /*

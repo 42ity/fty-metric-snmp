@@ -35,8 +35,9 @@
     <class name = "host_actor" private = "1">Actor monitoring one host</class>
     <class name = "ftysnmp" private = "1">basic snmp functions</class>
     <class name = "credentials" private = "1">list of snmp credentials</class>
-    <class name = "fty_metric_snmp_server" state = "stable">Actor</class>
+    <class name = "fty_metric_snmp_server" state = "stable">Main actor</class>
+    <class name = "rule_tester" state = "stable">Class for testing rule file</class>
 
     <main name = "fty-metric-snmp" service = "1" />
-
+    <main name = "fty-metric-snmp-rule" />
 </project>

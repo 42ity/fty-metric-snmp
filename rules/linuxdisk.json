@@ -19,7 +19,7 @@ function main (host)
     result = { }
     oid, name = snmp_getnext (host, prefix)
     i = 1
-    while (string.sub (oid,1,prefixlen) == prefix)
+    while (string.sub (oid,1,prefixlen) == prefix) do
         idx = string.sub (oid, prefixlen+1)
         space = snmp_get (host, '.1.3.6.1.4.1.2021.9.1.9' .. idx)
         result[i] = 'disk.' .. name

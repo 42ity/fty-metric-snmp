@@ -73,10 +73,6 @@ FTY_METRIC_SNMP_PRIVATE void
 FTY_METRIC_SNMP_PRIVATE void
     credentials_test (bool verbose);
 
-//  Self test for private classes
-FTY_METRIC_SNMP_PRIVATE void
-    fty_metric_snmp_private_selftest (bool verbose);
-
 #endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 
 #endif
