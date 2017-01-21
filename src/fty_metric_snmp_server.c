@@ -193,69 +193,6 @@ fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const
 }
 
 //  --------------------------------------------------------------------------
-//  When asset message comes, function creates new host_actor if not exists.
-
-zactor_t *
-fty_metric_snmp_server_asset_update (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
-{
-    if (!self || !ftymsg) return NULL;
-    
-    const char *assetname = fty_proto_name (ftymsg);
-    zhash_t *ext = fty_proto_ext (ftymsg);
-    const char *ip = (char *)zhash_lookup (ext, "ip.1");
-    if (!ip) return NULL;
-    if (zhash_lookup (self->host_actors, assetname)) {
-        // already exists
-        // TODO: implement also update
-        return NULL;
-    }
-    zactor_t *host = NULL;
-    rule_t *rule = (rule_t *)zlist_first (self->rules);
-    bool haverule = false;
-    while (rule) {
-        if (is_rule_for_this_asset (rule, ftymsg)) {
-            haverule = true;
-            if (!host) host = zactor_new(host_actor, NULL);
-            zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
-            zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
-        }
-        rule = (rule_t *)zlist_next (self->rules);
-    }
-    if (!haverule) {
-        // no rules, no need to have an actor
-        zactor_destroy (&host);
-        zsys_debug ("no rule for %s", assetname);
-        return NULL;
-    }
-    zsys_debug ("deploying actor for %s", assetname);
-    zstr_sendx (host, "ASSETNAME", assetname, NULL);
-    zstr_sendx (host, "IP", ip, NULL);
-    const snmp_credentials_t *cr = fty_metric_snmp_server_detect_credentials (self, ip);
-    if (cr) {
-        char *versionstr;
-        asprintf (&versionstr, "%i", cr->version);
-        zstr_sendx (host, "CREDENTIALS", versionstr, cr->community, NULL);
-        zstr_free (&versionstr);
-    } else {
-        zsys_error ("Can't detect SNMP credentials for %s", assetname);
-        zstr_sendx (host, "CREDENTIALS", "0", "", NULL);
-    }
-    zhash_insert (self->host_actors, assetname, host);
-    zhash_freefn (self->host_actors, assetname, host_actor_freefn);
-    return host;
-}
-
-//  --------------------------------------------------------------------------
-//  Functions removes an actor when asset is deleted
-
-zactor_t *
-fty_metric_snmp_server_asset_delete (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg)
-{
-    // TODO: implement removing
-    return NULL;
-}
-
-//  --------------------------------------------------------------------------
 //  Update poller to have all existing sockets, pipes and actors
 
 void
@@ -269,6 +206,78 @@ fty_metric_snmp_server_update_poller (fty_metric_snmp_server_t *self, zsock_t *p
         zpoller_add (self -> poller, a);
         a = (zactor_t *) zhash_next (self -> host_actors);
     }
+}
+
+
+//  --------------------------------------------------------------------------
+//  When asset message comes, function creates new host_actor if not exists.
+
+zactor_t *
+fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zsock_t *pipe)
+{
+    if (!self || !ftymsg) return NULL;
+    
+    const char *operation = fty_proto_operation (ftymsg);
+    const char *assetname = fty_proto_name (ftymsg);
+    
+    if (streq (operation, "delete")) {
+        if (zhash_lookup (self->host_actors, assetname)) {
+            zhash_delete (self->host_actors, assetname);
+            fty_metric_snmp_server_update_poller (self, pipe);
+        }
+        return NULL;
+    }
+    if (
+        streq (operation, "inventory") ||
+        streq (operation, "update") ||
+        streq (operation, "create")
+    ) {
+        zhash_t *ext = fty_proto_ext (ftymsg);
+        const char *ip = (char *)zhash_lookup (ext, "ip.1");
+        if (!ip) return NULL;
+        zactor_t *host = (zactor_t *) zhash_lookup (self->host_actors, assetname);
+        if (host) zstr_send (host, "DROPLUA");
+
+        rule_t *rule = (rule_t *)zlist_first (self->rules);
+        bool haverule = false;
+        while (rule) {
+            if (is_rule_for_this_asset (rule, ftymsg)) {
+                haverule = true;
+                if (!host) {
+                    zsys_debug ("deploying actor for %s", assetname);
+                    host = zactor_new(host_actor, NULL);
+                    assert (host);
+                    zhash_insert (self->host_actors, assetname, host);
+                    zhash_freefn (self->host_actors, assetname, host_actor_freefn);
+                    zstr_sendx (host, "ASSETNAME", assetname, NULL);
+                }
+                zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
+                zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
+            }
+            rule = (rule_t *)zlist_next (self->rules);
+        }
+        if (!haverule) {
+            zsys_debug ("no rule for %s", assetname);
+            if (host) {
+                zactor_destroy (&host);
+                fty_metric_snmp_server_update_poller (self, pipe);
+            }
+            return NULL;
+        }
+        zstr_sendx (host, "IP", ip, NULL);
+        const snmp_credentials_t *cr = fty_metric_snmp_server_detect_credentials (self, ip);
+        if (cr) {
+            char *versionstr;
+            asprintf (&versionstr, "%i", cr->version);
+            zstr_sendx (host, "CREDENTIALS", versionstr, cr->community, NULL);
+            zstr_free (&versionstr);
+        } else {
+            zsys_error ("Can't detect SNMP credentials for %s", assetname);
+            zstr_sendx (host, "CREDENTIALS", "0", "", NULL);
+        }
+        return host;
+    }
+    return NULL;
 }
 
 //  --------------------------------------------------------------------------
@@ -358,19 +367,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             if (msg && is_fty_proto (msg)) {
                 fty_proto_t *ftymsg = fty_proto_decode (&msg);
                 if (fty_proto_id (ftymsg) == FTY_PROTO_ASSET) {
-                    if (
-                        streq (fty_proto_operation (ftymsg), "update") ||
-                        streq (fty_proto_operation (ftymsg), "create")
-                    ) {
-                        zactor_t *act = fty_metric_snmp_server_asset_update (self, ftymsg);
-                        if (act) {
-                            fty_metric_snmp_server_update_poller (self, pipe);
-                        }
-                    }
-                    if (streq (fty_proto_operation (ftymsg), "delete")) {
-                        fty_metric_snmp_server_asset_delete (self, ftymsg);
-                        fty_metric_snmp_server_update_poller (self, pipe);
-                    }
+                    fty_metric_snmp_server_asset (self, ftymsg, pipe);
                 }
                 fty_proto_destroy (&ftymsg);
             }

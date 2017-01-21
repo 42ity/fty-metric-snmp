@@ -221,6 +221,9 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                     zstr_free (&name);
                     zstr_free (&func);
                 }
+                else if (streq (cmd, "DROPLUA")) {
+                    host_actor_remove_functions (self);
+                }
                 else if (streq (cmd, "CREDENTIALS")) {
                     char *version = zmsg_popstr (msg);
                     char *community = zmsg_popstr (msg);
