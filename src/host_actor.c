@@ -109,10 +109,32 @@ void zhash_lua_free (void *data) {
 }
 
 //  --------------------------------------------------------------------------
+//  set credentials in all lua functions
+
+void host_actor_set_credentials_to_lua (host_actor_t *self)
+{
+    if (!self) return;
+    
+    lua_State *l = (lua_State *) zhash_first (self->functions);
+    while (l) {
+        lua_pushnumber (l, self->credentials.version);
+        lua_setglobal (l, "SNMP_VERSION");
+        if (self -> credentials.community) {
+            lua_pushstring (l, self -> credentials.community);
+            lua_setglobal (l, "SNMP_COMMUNITY_NAME");
+        }
+        l = (lua_State *) zhash_next (self->functions);
+    }
+}
+
+//  --------------------------------------------------------------------------
 //  compile lua function and add it to list
 
-void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
+// void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
+void host_actor_add_lua_function (host_actor_t *self, const char *name, const char *func)
 {
+    if (!self) return;
+    
     zsys_debug ("adding lua func");
     lua_State *l = luasnmp_new ();
     if (luaL_dostring (l, func) != 0) {
@@ -126,9 +148,15 @@ void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, co
         luasnmp_destroy (&l);
         return;
     }
+    lua_pushnumber (l, self -> credentials.version);
+    lua_setglobal (l, "SNMP_VERSION");
+    if (self -> credentials.community) {
+        lua_pushstring (l, self -> credentials.community);
+        lua_setglobal (l, "SNMP_COMMUNITY_NAME");
+    }
     lua_settop (l, 0);
-    zhash_insert (functions, name, l);
-    zhash_freefn (functions, name, zhash_lua_free);
+    zhash_insert (self -> functions, name, l);
+    zhash_freefn (self -> functions, name, zhash_lua_free);
     zsys_debug ("New function '%s' created", name);
 }
 
@@ -216,7 +244,7 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                     char *name = zmsg_popstr (msg);
                     char *func = zmsg_popstr (msg);
                     if (name && func) {
-                        host_actor_add_lua_function (self->functions, name, func, &self->credentials);
+                        host_actor_add_lua_function (self, name, func);
                     }
                     zstr_free (&name);
                     zstr_free (&func);
@@ -231,6 +259,7 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                         zstr_free (&self->credentials.community);
                         self -> credentials.version = atoi (version);
                         self -> credentials.community = community;
+                        host_actor_set_credentials_to_lua (self);
                         community = NULL;
                     }
                     zstr_free (&version);
