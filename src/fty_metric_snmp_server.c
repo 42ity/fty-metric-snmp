@@ -227,11 +227,7 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
         }
         return NULL;
     }
-    if (
-        streq (operation, "inventory") ||
-        streq (operation, "update") ||
-        streq (operation, "create")
-    ) {
+    if (streq (operation, "inventory") && streq (mlm_client_sender (self -> mlm), "asset-autoupdate")) {
         zhash_t *ext = fty_proto_ext (ftymsg);
         const char *ip = (char *)zhash_lookup (ext, "ip.1");
         if (!ip) return NULL;
