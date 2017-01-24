@@ -454,7 +454,7 @@ fty_metric_snmp_server_test (bool verbose)
     zclock_sleep (1000);
     
     mlm_client_t *asset = mlm_client_new ();
-    mlm_client_connect (asset, endpoint, 5000, "assetsource");
+    mlm_client_connect (asset, endpoint, 5000, "asset-autoupdate");
     mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
     mlm_client_set_consumer (asset, FTY_PROTO_STREAM_METRICS, ".*");
 
@@ -464,7 +464,7 @@ fty_metric_snmp_server_test (bool verbose)
     zmsg_t *assetmsg = fty_proto_encode_asset (
         NULL,
         "mydevice",
-        "update",
+        "inventory",
         ext
     );
     zhash_destroy (&ext);
@@ -478,7 +478,7 @@ fty_metric_snmp_server_test (bool verbose)
     assetmsg = fty_proto_encode_asset (
         NULL,
         "somedev",
-        "update",
+        "inventory",
         ext
     );
     zhash_destroy (&ext);
