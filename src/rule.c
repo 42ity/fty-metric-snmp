@@ -35,6 +35,7 @@ struct _rule_t {
     char *description;
     zlist_t *assets;
     zlist_t *groups;
+    zlist_t *models;
     char *evaluation;
 };
 
@@ -53,6 +54,9 @@ rule_new (void)
     self -> groups = zlist_new ();
     zlist_autofree (self -> groups);
     zlist_comparefn (self -> groups, (int (*)(void *, void *))strcmp);
+    self -> models = zlist_new ();
+    zlist_autofree (self -> models);
+    zlist_comparefn (self -> models, (int (*)(void *, void *))strcmp);
     return self;
 }
 
@@ -82,6 +86,12 @@ int rule_json_callback (const char *locator, const char *value, void *data)
         zlist_append (self -> groups, group);
         zlist_freefn (self -> groups, group, free, true);
         zstr_free (&group);
+    }
+    else if (strncmp (locator, "models/", 7) == 0) {
+        char *model = vsjson_decode_string (value);
+        zlist_append (self -> models, model);
+        zlist_freefn (self -> models, model, free, true);
+        zstr_free (&model);
     }
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
@@ -132,6 +142,7 @@ rule_destroy (rule_t **self_p)
         //  Free class properties here
         zlist_destroy (&self->assets);
         zlist_destroy (&self->groups);
+        zlist_destroy (&self->models);
         zstr_free (&self->name);
         zstr_free (&self->description);
         zstr_free (&self->evaluation);
@@ -177,6 +188,15 @@ zlist_t *rule_groups (rule_t *self)
 {
     if (!self) return NULL;
     return self->groups;
+}
+
+//  --------------------------------------------------------------------------
+//  Get the list of models/PN for which this rule should be applied
+
+zlist_t *rule_models (rule_t *self)
+{
+    if (!self) return NULL;
+    return self->models;
 }
 
 //  --------------------------------------------------------------------------

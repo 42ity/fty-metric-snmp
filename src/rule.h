@@ -57,6 +57,10 @@ FTY_METRIC_SNMP_PRIVATE zlist_t *
 FTY_METRIC_SNMP_PRIVATE zlist_t *
     rule_groups (rule_t *self);
 
+//  Get the list of models and PNs for which this rule should be applied
+FTY_METRIC_SNMP_PRIVATE zlist_t *
+    rule_models (rule_t *self);
+
 //  Get rule name
 FTY_METRIC_SNMP_PRIVATE const char *
     rule_name (rule_t *self);

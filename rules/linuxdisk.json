@@ -2,6 +2,7 @@
 "name" : "linuxdisk",
 "description" : "Disk space on Linux server",
 "assets" : [],
+"models" : [],
 "groups" : ["linuxserver"],
 "evaluation" : "
 function main (host)

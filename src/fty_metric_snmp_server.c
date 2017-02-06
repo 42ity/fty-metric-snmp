@@ -161,6 +161,12 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
         key = (char *)zlist_next (keys);
     }
     zlist_destroy (&keys);
+
+    const char *model = fty_proto_ext_string (ftymsg, "model", NULL);
+    if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
+    model = fty_proto_ext_string (ftymsg, "device.part", NULL);
+    if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
+    
     return 0;
 }
 
