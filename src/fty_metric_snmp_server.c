@@ -115,10 +115,10 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
 
     struct dirent * entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG) {
+        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG || entry -> d_type == 0) {
             // file or link
             int l = strlen (entry -> d_name);
-            if ( l > 5 && streq (&(entry -> d_name[l - 6]), ".json")) {
+            if ( l > 5 && streq (&(entry -> d_name[l - 6]), ".rule")) {
                 // json file
                 rule_t *rule = rule_new();
                 snprintf (fullpath, PATH_MAX, "%s/%s", path, entry -> d_name);

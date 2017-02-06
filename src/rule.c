@@ -220,7 +220,7 @@ rule_test (bool verbose)
     //  Simple create/destroy test
     rule_t *self = rule_new ();
     assert (self);
-    rule_load (self, "rules/linuxload.json");
+    rule_load (self, "rules/linuxload.rule");
     rule_destroy (&self);
     //  @end
     printf ("OK\n");
