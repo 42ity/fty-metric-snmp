@@ -386,18 +386,27 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                 char *type = zmsg_popstr (msg);
                 char *value = zmsg_popstr (msg);
                 char *units = zmsg_popstr (msg);
+                char *desc = zmsg_popstr (msg);
                 if (type && element && value && units) {
                     char *topic;
                     asprintf(&topic, "%s@%s", type, element);
-                    zmsg_t *metric = fty_proto_encode_metric (NULL, type, element, value, units, ttl);
+                    zhash_t *aux = zhash_new ();
+                    zhash_autofree (aux);
+                    assert (aux);
+                    if (desc && strlen (desc)) {
+                        zhash_insert (aux, "description", desc);
+                    }
+                    zmsg_t *metric = fty_proto_encode_metric (aux, type, element, value, units, ttl);
                     mlm_client_send (self->mlm, topic, &metric);
                     zmsg_destroy (&metric);
+                    zhash_destroy (&aux);
                     zstr_free (&topic);
                 }
                 zstr_free (&type);
                 zstr_free (&element);
                 zstr_free (&value);
                 zstr_free (&units);
+                zstr_free (&desc);
             }
             zstr_free (&cmd);
             zmsg_destroy (&msg);
@@ -452,7 +461,7 @@ fty_metric_snmp_server_test (bool verbose)
         " \"groups\" : [\"mygroup\"],"
         " \"evaluation\" : \""
         "   function main (host)"
-        "     return { 'temperature', 10, 'C' }"
+        "     return { 'temperature', 10, 'C', 'nice tempereture' }"
         "   end"
         " \""
         "}";

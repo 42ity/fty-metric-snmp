@@ -166,6 +166,8 @@ void host_actor_add_lua_function (host_actor_t *self, const char *name, const ch
 void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_t *pipe)
 {
     lua_settop (l, 0);
+    lua_pushstring (l, name);
+    lua_setglobal (l, "NAME");
     lua_getglobal (l, "main");
     lua_pushstring (l, ip);
 
@@ -181,6 +183,7 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
             const char *type = NULL;
             const char *value = NULL;
             const char *units = NULL;
+            const char *description = "";
 
             lua_pushnumber(l, i++);
             lua_gettable(l, -2);
@@ -197,9 +200,14 @@ void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_
             if (lua_isstring (l, -1)) units = lua_tostring(l,-1);
             lua_pop (l, 1);
 
+            lua_pushnumber(l, i++);
+            lua_gettable(l, -2);
+            if (lua_isstring (l, -1)) description = lua_tostring(l,-1);
+            lua_pop (l, 1);
+
             if (type && value && units) {
-                zsys_debug ("sending METRIC/%s/%s/%s/%s", name, type, value, units);
-                zstr_sendx (pipe, "METRIC", name, type, value, units, NULL);
+                zsys_debug ("sending METRIC/%s/%s/%s/%s/%s", name, type, value, units, description);
+                zstr_sendx (pipe, "METRIC", name, type, value, units, description, NULL);
             } else {
                 break;
             }

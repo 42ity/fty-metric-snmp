@@ -26,7 +26,8 @@ function main (host)
         result[i] = 'disk.' .. name
         result[i+1] = space
         result[i+2] = '%'
-        i = i + 3
+        result[i+3] = ''
+        i = i + 4
         oid, name = snmp_getnext (host, oid)
     end
     return result

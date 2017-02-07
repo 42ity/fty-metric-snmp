@@ -60,6 +60,8 @@ rule_tester (
         result = 3;
         goto cleanup;
     }
+    lua_pushstring(lua, addr);
+    lua_setglobal(lua, "NAME");
     lua_getglobal (lua, "main");
     if (!lua_isfunction (lua, -1)) {
         puts ("Error: main function not found");
@@ -84,6 +86,7 @@ rule_tester (
             const char *type = NULL;
             const char *value = NULL;
             const char *units = NULL;
+            const char *desc = NULL;
 
             lua_pushnumber(lua, i++);
             lua_gettable(lua, -2);
@@ -100,17 +103,25 @@ rule_tester (
             if (lua_isstring (lua, -1)) units = lua_tostring(lua,-1);
             lua_pop (lua, 1);
 
+            lua_pushnumber(lua, i++);
+            lua_gettable(lua, -2);
+            if (lua_isstring (lua, -1)) desc = lua_tostring(lua,-1);
+            lua_pop (lua, 1);
+
             if (type || value || units) {
                 ++returnedvalues;
-                printf ("got METRIC/%s/%s/%s/%s\n",
+                printf ("got METRIC/%s/%s/%s/%s/%s\n",
                         addr,
                         type ? type : "(null)",
                         value ? value : "(null)",
-                        units ? units : "(null)");
+                        units ? units : "(null)",
+                        desc);
             } else {
                 break;
             }
         }
+    } else {
+        lua_error (lua);
     }
  cleanup:
     luasnmp_destroy (&lua);

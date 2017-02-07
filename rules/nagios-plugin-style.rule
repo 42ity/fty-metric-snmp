@@ -1,0 +1,22 @@
+{
+    "name"          : "nagios-plugin-style",
+    "description"   : "concept how to get nagios plugin work",
+    "assets"        : [ ],
+    "groups"        : [ ],
+    "models"        : [ ],
+    "evaluation"    : "
+         function main(host)
+             local file = io.popen ('ping -c 2 ' .. host);
+             local out = file:read ('*a');
+             local result = {file:close ()}
+             local last = ''
+             for l in string.gmatch (out, '[^%c]+') do
+                  last = l
+             end
+             if result[1] then
+                 return { 'nagios.ping', 0, '', NAME .. ' is reachable (' .. last .. ')'};
+             end
+             return {'nagios.ping', 2, '', NAME .. ' is reachable (' .. last .. ')'};
+         end
+    "
+}
