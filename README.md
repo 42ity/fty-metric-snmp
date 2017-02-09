@@ -35,7 +35,7 @@ Rules json has following parts
 * groups - optional - list of asset groups (extended attribute group.x). Rule will
   be used for all assets that belongs to at least one of listed groups.
 * assets - optional - rule will be applied to assets explicitly listed here
-* models - optional - rule will be applies to assets of listed model or part number
+* models - optional - rule will be applied to assets of listed model or part number
   (see extended attribute model and device.part)
 * evaluation - mandatory - lua code for producing metrics.
 
@@ -58,7 +58,7 @@ SNMP version and credentials are readed from 42ITy configuration file. They are 
 in lua global variables SNMP_VERSION and SNMP_COMMUNITY_NAME.
 
 lua is extended of two SNMP functions
-### snmp_get (oid)
+### snmp_get (host, oid)
 Function returns the value or nil on error. (wrong oid, networking issue, wrong
 credentials, timeout, ...)
 
@@ -66,13 +66,13 @@ credentials, timeout, ...)
 -- get system description
 systemdescription = snmp_get (host, '.1.3.6.1.2.1.1.0');
 ```
-### snmp_getnext (oid)
+### snmp_getnext (host, oid)
 Function returns oid and value on success and nil, nil on error
 ```lua
 -- find first 5 items in MIB
 oid = '.1'
 for i=1,5 do
-  oid, value = snmp_getnext(oid)
+  oid, value = snmp_getnext(host, oid)
   print (oid, value)
 end
 ```
