@@ -33,6 +33,7 @@
 struct _rule_t {
     char *name;
     char *description;
+    unsigned int polling;
     zlist_t *assets;
     zlist_t *groups;
     zlist_t *models;
@@ -57,6 +58,7 @@ rule_new (void)
     self -> models = zlist_new ();
     zlist_autofree (self -> models);
     zlist_comparefn (self -> models, (int (*)(void *, void *))strcmp);
+    self -> polling = 1;
     return self;
 }
 
@@ -74,6 +76,10 @@ int rule_json_callback (const char *locator, const char *value, void *data)
     }
     else if (streq (locator, "description")) {
         self -> description = vsjson_decode_string (value);
+    }
+    else if (streq (locator, "polling")) {
+        self -> polling = atoi (value);
+        if (!self -> polling) self -> polling = 1;
     }
     else if (strncmp (locator, "assets/", 7) == 0) {
         char *asset = vsjson_decode_string (value);
@@ -206,6 +212,15 @@ const char *rule_name (rule_t *self)
 {
     if (!self) return NULL;
     return self->name;
+}
+
+//  --------------------------------------------------------------------------
+//  Get rule polling
+
+unsigned int rule_polling (rule_t *self)
+{
+    if (!self) return 1;
+    return self->polling;
 }
 
 //  --------------------------------------------------------------------------

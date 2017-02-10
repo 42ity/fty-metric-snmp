@@ -43,7 +43,68 @@ struct _host_actor_t {
     char *ip;
     snmp_credentials_t credentials;
     zhash_t *functions;
+    unsigned int counter;
 };
+
+
+//  --------------------------------------------------------------------------
+//  private polling function class
+
+typedef struct {
+    unsigned int polling;
+    lua_State *lua;
+} polling_function_t;
+
+polling_function_t *pf_new ()
+{
+    polling_function_t *self = (polling_function_t *) zmalloc (sizeof (polling_function_t));
+    assert (self);
+    return self;
+}
+
+void pf_destroy (polling_function_t **self_p)
+{
+    if (!self_p || !*self_p) return;
+
+    polling_function_t *self = *self_p;
+    if (self -> lua) luasnmp_destroy (&self -> lua);
+    free (self);
+    *self_p = NULL;
+}
+
+void pf_set_polling (polling_function_t *self, unsigned int polling)
+{
+    if (!self) return;
+    self -> polling = polling;
+}
+
+void pf_set_lua (polling_function_t *self, lua_State **lua)
+{
+    if (!self) return;
+    
+    if (self->lua) luasnmp_destroy (&self -> lua);
+    self -> lua = *lua;
+    *lua = NULL;
+}
+
+unsigned int pf_polling (polling_function_t *self)
+{
+    if (!self) return 1;
+    return self->polling;
+}
+
+lua_State *pf_lua (polling_function_t *self)
+{
+    if (!self) return NULL;
+    return self->lua;
+}
+
+void pf_freefn (void *self)
+{
+    if (!self) return;
+    polling_function_t *pf = (polling_function_t *)self; 
+    pf_destroy (&pf);
+}
 
 //  --------------------------------------------------------------------------
 //  Create a new host actor
@@ -100,38 +161,29 @@ void host_actor_remove_functions (host_actor_t *self)
 }
 
 //  --------------------------------------------------------------------------
-//  free function for zhash
-
-void zhash_lua_free (void *data) {
-    if (!data) return;
-    lua_State *l = (lua_State *)data;
-    luasnmp_destroy (&l);
-}
-
-//  --------------------------------------------------------------------------
 //  set credentials in all lua functions
 
 void host_actor_set_credentials_to_lua (host_actor_t *self)
 {
     if (!self) return;
     
-    lua_State *l = (lua_State *) zhash_first (self->functions);
-    while (l) {
+    polling_function_t *pf = (polling_function_t *) zhash_first (self->functions);
+    while (pf) {
+        lua_State *l = pf_lua (pf);
         lua_pushnumber (l, self->credentials.version);
         lua_setglobal (l, "SNMP_VERSION");
         if (self -> credentials.community) {
             lua_pushstring (l, self -> credentials.community);
             lua_setglobal (l, "SNMP_COMMUNITY_NAME");
         }
-        l = (lua_State *) zhash_next (self->functions);
+        pf = (polling_function_t *) zhash_next (self->functions);
     }
 }
 
 //  --------------------------------------------------------------------------
 //  compile lua function and add it to list
 
-// void host_actor_add_lua_function (zhash_t *functions, char *name, char *func, const snmp_credentials_t *cred)
-void host_actor_add_lua_function (host_actor_t *self, const char *name, const char *func)
+void host_actor_add_lua_function (host_actor_t *self, const char *name, const char *func, unsigned int polling)
 {
     if (!self) return;
     
@@ -155,16 +207,22 @@ void host_actor_add_lua_function (host_actor_t *self, const char *name, const ch
         lua_setglobal (l, "SNMP_COMMUNITY_NAME");
     }
     lua_settop (l, 0);
-    zhash_insert (self -> functions, name, l);
-    zhash_freefn (self -> functions, name, zhash_lua_free);
+
+    polling_function_t *pf = pf_new ();
+    pf_set_polling (pf, polling);
+    pf_set_lua (pf, &l);
+    
+    zhash_insert (self -> functions, name, pf);
+    zhash_freefn (self -> functions, name, pf_freefn);
     zsys_debug ("New function '%s' created", name);
 }
 
 //  --------------------------------------------------------------------------
 //  evaluate one function and send metric messages
 
-void host_actor_evaluate (lua_State *l, const char *name, const char *ip, zsock_t *pipe)
+void host_actor_evaluate (polling_function_t *pf, const char *name, const char *ip, zsock_t *pipe)
 {
+    lua_State *l = pf_lua (pf);
     lua_settop (l, 0);
     lua_pushstring (l, name);
     lua_setglobal (l, "NAME");
@@ -240,22 +298,29 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                 else if (streq (cmd, "WAKEUP")) {
                     zsys_debug ("actor for '%s' received WAKEUP command, (%s)", self->asset, self->ip);
                     if (self->ip) {
-                        lua_State *l = (lua_State *) zhash_first (self->functions);
-                        if (!l) zsys_error ("asset '%s' has no defined function", self->asset);
-                        while(l) {
-                            host_actor_evaluate (l, self->asset, self->ip, pipe);
-                            l = (lua_State *) zhash_next (self->functions);
+                        polling_function_t *pf = (polling_function_t *) zhash_first (self->functions);
+                        if (!pf) zsys_error ("asset '%s' has no defined function", self->asset);
+                        while(pf) {
+                            if (self -> counter % pf_polling (pf) == 0) {
+                                host_actor_evaluate (pf, self->asset, self->ip, pipe);
+                            }
+                            pf = (polling_function_t *) zhash_next (self->functions);
                         }
                     }
+                    ++ self -> counter;
+                    zsys_debug ("counter: %i", self->counter);
                 }
                 else if (streq (cmd, "LUA")) {
                     char *name = zmsg_popstr (msg);
                     char *func = zmsg_popstr (msg);
+                    char *polling = zmsg_popstr (msg);
                     if (name && func) {
-                        host_actor_add_lua_function (self, name, func);
+                        unsigned int ipolling = polling ? atoi (polling) : 1;
+                        host_actor_add_lua_function (self, name, func, ipolling);
                     }
                     zstr_free (&name);
                     zstr_free (&func);
+                    zstr_free (&polling);
                 }
                 else if (streq (cmd, "DROPLUA")) {
                     host_actor_remove_functions (self);
@@ -322,7 +387,7 @@ host_actor_test (bool verbose)
     zstr_sendx (actor, "ASSETNAME", "localhost", NULL);
     zstr_sendx (actor, "IP", "127.0.0.1", NULL);
     zstr_sendx (actor, "CREDENTIALS", "1", "public", NULL);
-    zstr_sendx (actor, "LUA", "load", "function main(host) return { 'load', 15, '%' } end", NULL);
+    zstr_sendx (actor, "LUA", "load", "function main(host) return { 'load', 15, '%' } end", "1", NULL);
 
     zstr_sendx (actor, "WAKEUP", NULL);
     zmsg_t *msg = zmsg_recv (actor);

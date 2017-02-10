@@ -69,6 +69,10 @@ FTY_METRIC_SNMP_PRIVATE const char *
 FTY_METRIC_SNMP_PRIVATE const char *
     rule_evaluation (rule_t *self);
 
+// rulle polling multiplicator
+FTY_METRIC_SNMP_PRIVATE unsigned int
+    rule_polling (rule_t *self);
+
 //  freefn for zhash/zlist
 FTY_METRIC_SNMP_PRIVATE void
     rule_freefn (void *self);
@@ -76,6 +80,7 @@ FTY_METRIC_SNMP_PRIVATE void
 
 FTY_METRIC_SNMP_PRIVATE void
     vsjson_test (bool verbose);
+
 
 #ifdef __cplusplus
 }
