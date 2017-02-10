@@ -31,6 +31,7 @@ Rule file MUST be in UTF-8 encoding (ASCII is OK of course)
 Rules json has following parts
 * name - mandatory - name of the rule, SHOULD be ASCII identifier of the rule and
   MUST be unique
+* polling - optional - polling rate of this rule. Default is 1
 * description - optional - user friendly description of the rule
 * groups - optional - list of asset groups (extended attribute group.x). Rule will
   be used for all assets that belongs to at least one of listed groups.
@@ -76,6 +77,17 @@ for i=1,5 do
   print (oid, value)
 end
 ```
+
+## polling frequency
+There are two parameters you have to think about. First, there is command line
+parameter --polling. This parameter says how often is send signal to do the
+evaluation.
+
+The second parameter is polling parameter in rule. This parameter says how often
+the evaluation should be done.
+
+Since the first polling is set to 60 seconds by default, the rule polling simply
+says how often we ask for values in [minutes].
 
 ## nagios plugins
 It is possible to re-use nagios plugins. The concept is simple. Run the plugin, read

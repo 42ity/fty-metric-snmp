@@ -1,6 +1,7 @@
 {
 "name" : "linuxdisk",
 "description" : "Disk space on Linux server",
+"polling" : 15,
 "assets" : [],
 "models" : [],
 "groups" : ["linuxserver"],

@@ -1,6 +1,7 @@
 {
     "name"          : "nagios-plugin-style",
     "description"   : "concept how to get nagios plugin work",
+    "polling"       : 1,
     "assets"        : [ ],
     "groups"        : [ ],
     "models"        : [ ],
