@@ -236,6 +236,7 @@ void host_actor_evaluate (polling_function_t *pf, const char *name, const char *
             zsys_error ("function did not returned array");
             return;
         }
+        char *pollfreq = zsys_sprintf("%i", pf_polling (pf));
         int i = 1;
         while (true) {
             const char *type = NULL;
@@ -264,12 +265,13 @@ void host_actor_evaluate (polling_function_t *pf, const char *name, const char *
             lua_pop (l, 1);
 
             if (type && value && units) {
-                zsys_debug ("sending METRIC/%s/%s/%s/%s/%s", name, type, value, units, description);
-                zstr_sendx (pipe, "METRIC", name, type, value, units, description, NULL);
+                zsys_debug ("sending METRIC/%s/%s/%s/%s/%s/%s", name, type, value, units, pollfreq, description);
+                zstr_sendx (pipe, "METRIC", name, type, value, units, pollfreq, description, NULL);
             } else {
                 break;
             }
         }
+        zstr_free (&pollfreq);
     }
 }
 
