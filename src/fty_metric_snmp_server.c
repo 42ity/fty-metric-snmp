@@ -398,7 +398,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                     if (desc && strlen (desc)) {
                         zhash_insert (aux, "description", desc);
                     }
-                    zmsg_t *metric = fty_proto_encode_metric (aux, type, element, value, units, ttl*freq);
+                    zmsg_t *metric = fty_proto_encode_metric (aux, time(NULL), ttl*freq, type, element, value, units);
                     mlm_client_send (self->mlm, topic, &metric);
                     zmsg_destroy (&metric);
                     zhash_destroy (&aux);
