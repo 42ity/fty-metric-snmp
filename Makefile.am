@@ -16,12 +16,13 @@ AM_CPPFLAGS = \
     ${libzmq_CFLAGS} \
     ${czmq_CFLAGS} \
     ${malamute_CFLAGS} \
-    ${ftyproto_CFLAGS} \
+    ${fty_proto_CFLAGS} \
+    ${lua_5_1_CFLAGS} \
     ${lua_CFLAGS} \
     ${netsnmp_CFLAGS} \
     -I$(srcdir)/include
 
-project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${ftyproto_LIBS} ${lua_LIBS} ${netsnmp_LIBS}
+project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${fty_proto_LIBS} ${lua_5_1_LIBS} ${lua_LIBS} ${netsnmp_LIBS}
 
 SUBDIRS = doc
 DIST_SUBDIRS = doc
@@ -31,15 +32,25 @@ noinst_PROGRAMS =
 check_PROGRAMS =
 noinst_LTLIBRARIES =
 TESTS =
+# Prepare variables that can be populated (appended) in generated Makefiles or
+# manually maintained src/Makemodules-local.am
+EXTRA_DIST =
+CLEANFILES =
+DISTCLEANFILES =
 
-EXTRA_DIST = \
-    CMakeLists.txt \
+if ENABLE_DIST_CMAKEFILES
+EXTRA_DIST += \
     Findlibzmq.cmake \
     Findczmq.cmake \
     Findmalamute.cmake \
-    Findftyproto.cmake \
+    Findfty_proto.cmake \
+    Findlua_5_1.cmake \
     Findlua.cmake \
     Findnetsnmp.cmake \
+    CMakeLists.txt
+endif
+
+EXTRA_DIST += \
     src/luasnmp.h \
     src/rule.h \
     src/vsjson.h \

@@ -32,7 +32,8 @@
 //  External dependencies
 #include <czmq.h>
 #include <malamute.h>
-#include <fty_proto.h>
+#include <ftyproto.h>
+#include <lua.h>
 #include <lua.h>
 #include <net-snmp/net-snmp-config.h>
 
@@ -81,6 +82,12 @@ typedef struct _rule_tester_t rule_tester_t;
 //  Public classes, each with its own header file
 #include "fty_metric_snmp_server.h"
 #include "rule_tester.h"
+
+#ifdef FTY_METRIC_SNMP_BUILD_DRAFT_API
+//  Self test for private classes
+FTY_METRIC_SNMP_EXPORT void
+    fty_metric_snmp_private_selftest (bool verbose);
+#endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 
 #endif
 /*
