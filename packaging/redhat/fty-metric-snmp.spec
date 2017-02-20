@@ -54,7 +54,7 @@ BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
 BuildRequires:  fty-proto-devel
 BuildRequires:  lua-devel
-BuildRequires:  netsnmp-devel
+BuildRequires:  net-snmp-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -83,7 +83,7 @@ Requires:       czmq-devel
 Requires:       malamute-devel
 Requires:       fty-proto-devel
 Requires:       lua-devel
-Requires:       netsnmp-devel
+Requires:       net-snmp-devel
 
 %description devel
 agent for getting measurements using lua and snmp development tools

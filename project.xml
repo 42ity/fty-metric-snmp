@@ -25,6 +25,8 @@
     <use project = "netsnmp"
          libname = "netsnmp"
          header = "net-snmp/net-snmp-config.h"
+         debian_name = "libsnmp-dev"
+         redhat_name = "net-snmp-devel"
          test = "init_snmp" />
 
     <class name = "luasnmp" private = "1">lua snmp extension</class>
