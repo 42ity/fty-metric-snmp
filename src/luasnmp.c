@@ -55,8 +55,9 @@ static int lua_snmp_get(lua_State *L)
     snmp_credentials_t credentials;
     lua_getglobal(L, "SNMP_VERSION");
     credentials.version = -1;
-    char *versionstr = lua_tostring (L, -1);
-    if (versionstr) credentials.version = atoi (versionstr);
+    const char *versionstr = lua_tostring (L, -1);
+    if (versionstr)
+        credentials.version = atoi (versionstr);
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     credentials.community = (char *)lua_tostring (L, -1);
 
@@ -89,7 +90,8 @@ static int lua_snmp_getnext(lua_State *L)
     lua_getglobal(L, "SNMP_VERSION");
     credentials.version = -1;
     const char *versionstr = lua_tostring (L, -1);
-    if (versionstr) credentials.version = atoi (versionstr);
+    if (versionstr)
+        credentials.version = atoi (versionstr);
 
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     credentials.community = (char *)lua_tostring (L, -1);
