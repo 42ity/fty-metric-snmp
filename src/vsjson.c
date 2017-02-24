@@ -226,13 +226,15 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
                 result = -1;
                 goto cleanup;
             }
-            size_t s = strlen (prefix) + strlen (key) + 2;
-            locator = (char *)malloc (s);
-            if (!locator) {
-                result = -2;
-                goto cleanup;
+            { // Scope the "s"
+                size_t s = strlen (prefix) + strlen (key) + 2;
+                locator = (char *)malloc (s);
+                if (!locator) {
+                    result = -2;
+                    goto cleanup;
+                }
+                snprintf(locator, s, "%s%c%s", prefix, VSJSON_SEPARATOR, key);
             }
-            snprintf(locator, s, "%s%c%s", prefix, VSJSON_SEPARATOR, key);
             switch (token[0]) {
             case '{':
                 result = _vsjson_walk_object (self, locator, func, data);
