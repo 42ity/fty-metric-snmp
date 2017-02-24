@@ -16,7 +16,11 @@ extern "C" {
 
 #define VSJSON_SEPARATOR '/'
 
+#ifndef VSJSON_T_DEFINED
 typedef struct _vsjson_t vsjson_t;
+#define VSJSON_T_DEFINED
+#endif
+
 typedef int (vsjson_callback_t)(const char *locator, const char *value, void *data);
 
 // minimalized json parser class
@@ -34,7 +38,7 @@ void vsjson_destroy (vsjson_t **self_p);
 const char* vsjson_first_token (vsjson_t *self);
 
 // get next json token
-// walk trough json like this:
+// walk through json like this:
 //     vsjson *parser = vsjson_new (jsonString);
 //     const char *token = vsjson_first_token (parser);
 //     while (token) {

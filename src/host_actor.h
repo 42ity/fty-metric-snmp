@@ -26,7 +26,10 @@
 extern "C" {
 #endif
 
+#ifndef HOST_ACTOR_T_DEFINED
 typedef struct _host_actor_t host_actor_t;
+#define HOST_ACTOR_T_DEFINED
+#endif
 
 //  @interface
 //  host actor function

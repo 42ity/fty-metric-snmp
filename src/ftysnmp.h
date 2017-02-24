@@ -26,13 +26,16 @@
 extern "C" {
 #endif
 
-//  @interface
 //  structure for keeping SNMP credentials of any version
+#ifndef SNMP_CREDENTIALS_T_DEFINED
 typedef struct _snmp_credentials_t {
     int version;
     char *community;
 } snmp_credentials_t;
+#define SNMP_CREDENTIALS_T_DEFINED
+#endif
 
+//  @interface
 //  snmp get function
 FTY_METRIC_SNMP_PRIVATE char *
     ftysnmp_get (const char* host, const char *oid, const snmp_credentials_t *credentials);

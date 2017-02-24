@@ -29,8 +29,7 @@ Build-Depends: debhelper (>= 9),
     libmlm-dev,
     libfty-proto-dev,
     liblua5.1-0-dev,
-    liblua5.1-0-dev,
-    libnetsnmp-dev,
+    libsnmp-dev,
     systemd,
     dh-systemd,
     asciidoc-base | asciidoc, xmlto,
@@ -51,8 +50,7 @@ Depends:
     libmlm-dev,
     libfty-proto-dev,
     liblua5.1-0-dev,
-    liblua5.1-0-dev,
-    libnetsnmp-dev,
+    libsnmp-dev,
     libfty-metric-snmp0 (= ${binary:Version})
 Description: agent for getting measurements using lua and snmp development tools
  This package contains development files for fty-metric-snmp: agent for getting measurements using lua and snmp

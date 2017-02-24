@@ -19,16 +19,11 @@
         test = "fty_proto_test">
         <use project = "malamute" />
     </use>
-    
+
     <use project = "lua-5.1" />
 
-    <use project = "lua" libname = "lua" prefix="lua"
-         min_major = "5" min_minor = "1" mit_patch = "0"
-         repository = "https://github.com/lua/lua"
-         includename = "lua" debian_name="liblua5.1-0-dev"
-         test = "lua_close" />
-
     <use project = "netsnmp"
+         debian_name = "libsnmp-dev"
          libname = "netsnmp"
          header = "net-snmp/net-snmp-config.h"
          test = "init_snmp" />

@@ -29,7 +29,10 @@ extern "C" {
 #endif
 
 
+#ifndef CREDENTIALS_T_DEFINED
 typedef struct _credentials_t credentials_t;
+#define CREDENTIALS_T_DEFINED
+#endif
 
 //  @interface
 //  Create a new credentials
