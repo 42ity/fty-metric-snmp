@@ -60,6 +60,15 @@ typedef struct _credentials_t credentials_t;
 #define CREDENTIALS_T_DEFINED
 #endif
 
+//  structure for keeping SNMP credentials of any version
+#ifndef SNMP_CREDENTIALS_T_DEFINED
+typedef struct _snmp_credentials_t {
+    int version;
+    char *community;
+} snmp_credentials_t;
+#define SNMP_CREDENTIALS_T_DEFINED
+#endif
+
 //  Internal API
 #include "luasnmp.h"
 #include "rule.h"
