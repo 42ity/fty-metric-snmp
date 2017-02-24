@@ -23,6 +23,7 @@
     <use project = "lua-5.1" />
 
     <use project = "netsnmp"
+         debian_name = "libsnmp-dev"
          libname = "netsnmp"
          header = "net-snmp/net-snmp-config.h"
          test = "init_snmp" />

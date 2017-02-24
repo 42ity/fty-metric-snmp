@@ -310,7 +310,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
     fi
 
     # Start of recipe for dependency: netsnmp
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list netsnmp-dev >/dev/null 2>&1) || \
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsnmp-dev >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions netsnmp >/dev/null 2>&1) \
     ; then
         echo ""

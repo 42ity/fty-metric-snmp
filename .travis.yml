@@ -40,7 +40,7 @@ matrix:
         packages:
         - valgrind
         - liblua5.1-0-dev
-        - netsnmp-dev
+        - libsnmp-dev
 #       - libzmq3-dev
 #       - libczmq-dev
 #       - libmlm-dev
@@ -55,7 +55,7 @@ addons:
     - asciidoc
     - xmlto
     - liblua5.1-0-dev
-    - netsnmp-dev
+    - libsnmp-dev
 #   - libzmq3-dev
 #   - libczmq-dev
 #   - libmlm-dev
