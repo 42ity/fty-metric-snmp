@@ -5,6 +5,7 @@
     >
 
     <target name = "debian" />
+    <target name = "travis" travis_distcheck = "0" />
 
     <include filename = "license.xml" />
     <version major = "0" minor = "1" patch = "0" />
