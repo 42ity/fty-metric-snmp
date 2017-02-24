@@ -39,13 +39,12 @@ matrix:
           key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-draft/xUbuntu_14.04/Release.key'
         packages:
         - valgrind
+        - liblua5.1-0-dev
+        - netsnmp-dev
 #       - libzmq3-dev
 #       - libczmq-dev
 #       - libmlm-dev
 #       - libfty-proto-dev
-#       - liblua5.1-0-dev
-#       - liblua5.1-0-dev
-#       - netsnmp-dev
 
 addons:
   apt:
@@ -55,13 +54,12 @@ addons:
     packages:
     - asciidoc
     - xmlto
+    - liblua5.1-0-dev
+    - netsnmp-dev
 #   - libzmq3-dev
 #   - libczmq-dev
 #   - libmlm-dev
 #   - libfty-proto-dev
-#   - liblua5.1-0-dev
-#   - liblua5.1-0-dev
-#   - netsnmp-dev
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi

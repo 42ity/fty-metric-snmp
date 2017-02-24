@@ -309,38 +309,6 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo "and it was not isntalled as a package; this may cause the test to fail!" >&2
     fi
 
-    # Start of recipe for dependency: lua
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list liblua5.1-0-dev >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions lua >/dev/null 2>&1) \
-    ; then
-        echo ""
-        BASE_PWD=${PWD}
-        echo "`date`: INFO: Building prerequisite 'lua' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 https://github.com/lua/lua lua
-        cd lua
-        CCACHE_BASEDIR=${PWD}
-        export CCACHE_BASEDIR
-        git --no-pager log --oneline -n1
-        if [ -e autogen.sh ]; then
-            $CI_TIME ./autogen.sh 2> /dev/null
-        fi
-        if [ -e buildconf ]; then
-            $CI_TIME ./buildconf 2> /dev/null
-        fi
-        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-            $CI_TIME libtoolize --copy --force && \
-            $CI_TIME aclocal -I . && \
-            $CI_TIME autoheader && \
-            $CI_TIME automake --add-missing --copy && \
-            $CI_TIME autoconf || \
-            $CI_TIME autoreconf -fiv
-        fi
-        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-        $CI_TIME make -j4
-        $CI_TIME make install
-        cd "${BASE_PWD}"
-    fi
-
     # Start of recipe for dependency: netsnmp
     if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list netsnmp-dev >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions netsnmp >/dev/null 2>&1) \

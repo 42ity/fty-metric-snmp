@@ -11,7 +11,6 @@ git clone --quiet --depth 1 https://github.com/zeromq/libzmq.git libzmq
 git clone --quiet --depth 1 https://github.com/zeromq/czmq.git czmq
 git clone --quiet --depth 1 https://github.com/zeromq/malamute.git malamute
 git clone --quiet --depth 1 https://github.com/42ity/fty-proto fty-proto
-git clone --quiet --depth 1 https://github.com/lua/lua lua
 cd -
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list zproject >/dev/null 2>&1) || \

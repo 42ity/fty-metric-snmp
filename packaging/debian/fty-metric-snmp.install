@@ -3,5 +3,5 @@ usr/share/man/man1/fty-metric-snmp.1
 usr/bin/fty-metric-snmp-rule
 usr/share/man/man1/fty-metric-snmp-rule.1
 etc/fty-metric-snmp/fty-metric-snmp.cfg
-lib/systemd/system/fty-metric-snmp{,@*}.{service,*}
+lib/systemd/system/fty-metric-snmp.service
 
