@@ -129,7 +129,9 @@ int rule_load (rule_t *self, const char *path)
     assert (buffer);
     memset (buffer, 0, capacity);
 
-    read (fd, buffer, capacity);
+    if (read (fd, buffer, capacity) == -1) {
+        zsys_error ("Error reading rule %s", path);
+    };
     close (fd);
     int result = rule_parse (self, buffer);
     free (buffer);
