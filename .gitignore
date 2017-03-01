@@ -1,3 +1,5 @@
+# This is a skeleton created by zproject.
+# You can add hand-written code here.
 save.xml
 # Object files
 *.o
@@ -21,6 +23,7 @@ save.xml
 # Executables
 src/fty-metric-snmp_selftest
 src/fty-metric-snmp
+src/fty-metric-snmp-rule
 src/fty_metric_snmp_selftest
 *.exe
 *.out
@@ -70,9 +73,13 @@ install_manifest.txt
 Testing/
 *.cmake
 CMakeLists.txt
+builds/cmake/
 
 # Repositories downloaded by CI integration scripts
-*.git/
+libzmq/
+czmq/
+malamute/
+fty-proto/
 
 # Travis build area
 tmp/
@@ -80,6 +87,12 @@ tmp/
 # Valgrind files
 callgrind*
 vgcore*
+
+# Vagrant files
+.vagrant
+
+# CLion / PyCharm
+.idea
 
 # GYP files
 project.Makefile

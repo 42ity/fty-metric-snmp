@@ -44,8 +44,8 @@ void luasnmp_init()
 
 static int lua_snmp_get(lua_State *L)
 {
-	const char* host = lua_tostring(L, 1);
-	const char* oid = lua_tostring(L, 2);
+    const char* host = lua_tostring(L, 1);
+    const char* oid = lua_tostring(L, 2);
 
     if (!host || !oid ) {
         return 0;
@@ -56,10 +56,11 @@ static int lua_snmp_get(lua_State *L)
     lua_getglobal(L, "SNMP_VERSION");
     credentials.version = -1;
     const char *versionstr = lua_tostring (L, -1);
-    if (versionstr) credentials.version = atoi (versionstr);
+    if (versionstr)
+        credentials.version = atoi (versionstr);
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     credentials.community = (char *)lua_tostring (L, -1);
-    
+
     if (! credentials.community || (credentials.version < 1)) {
         return 0;
     }
@@ -78,25 +79,26 @@ static int lua_snmp_get(lua_State *L)
 
 static int lua_snmp_getnext(lua_State *L)
 {
-    const char* host = lua_tostring(L, 1);
-    const char* oid = lua_tostring(L, 2);
+    const char *host = lua_tostring(L, 1);
+    const char *oid = lua_tostring(L, 2);
     if (!host || !oid ) {
         return 0;
     }
-    
+
     // get credentials/snmpversion for host
     snmp_credentials_t credentials;
     lua_getglobal(L, "SNMP_VERSION");
     credentials.version = -1;
     const char *versionstr = lua_tostring (L, -1);
-    if (versionstr) credentials.version = atoi (versionstr);
-    
+    if (versionstr)
+        credentials.version = atoi (versionstr);
+
     lua_getglobal(L, "SNMP_COMMUNITY_NAME");
     credentials.community = (char *)lua_tostring (L, -1);
     if (! credentials.community || (credentials.version < 1)) {
         return 0;
     }
-    
+
     char *nextoid, *nextvalue;
     ftysnmp_getnext (host, oid, &credentials, &nextoid, &nextvalue);
     if (nextoid && nextvalue) {
@@ -128,7 +130,7 @@ void extend_lua_of_snmp(lua_State *L)
 lua_State *luasnmp_new (void)
 {
 #if LUA_VERSION_NUM > 501
-    lua_State *l = luaL_newstate();   
+    lua_State *l = luaL_newstate();
 #else
     lua_State *l = lua_open();
 #endif
@@ -153,6 +155,6 @@ void luasnmp_destroy (lua_State **self_p)
 
 void luasnmp_test (bool verbose)
 {
-    //@ test is empty 
+    //@ test is empty
 }
 

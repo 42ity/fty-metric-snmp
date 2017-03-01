@@ -6,6 +6,7 @@
 
     <target name = "debian" />
     <target name = "redhat" />
+    <target name = "travis" travis_distcheck = "0" />
 
     <include filename = "license.xml" />
     <version major = "0" minor = "1" patch = "0" />
@@ -23,6 +24,7 @@
     <use project = "lua-5.1" />
 
     <use project = "netsnmp"
+         debian_name = "libsnmp-dev"
          libname = "netsnmp"
          header = "net-snmp/net-snmp-config.h"
          debian_name = "libsnmp-dev"
