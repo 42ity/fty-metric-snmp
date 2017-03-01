@@ -270,8 +270,7 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
         zstr_sendx (host, "IP", ip, NULL);
         const snmp_credentials_t *cr = fty_metric_snmp_server_detect_credentials (self, ip);
         if (cr) {
-            char *versionstr;
-            asprintf (&versionstr, "%i", cr->version);
+            char *versionstr = zsys_sprintf ("%i", cr->version);
             zstr_sendx (host, "CREDENTIALS", versionstr, cr->community, NULL);
             zstr_free (&versionstr);
         } else {
@@ -390,8 +389,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
                 char *desc = zmsg_popstr (msg);
                 if (type && element && value && units && pollfreq) {
                     int freq = atoi (pollfreq);
-                    char *topic;
-                    asprintf(&topic, "%s@%s", type, element);
+                    char *topic = zsys_sprintf ("%s@%s", type, element);
                     zhash_t *aux = zhash_new ();
                     zhash_autofree (aux);
                     assert (aux);
