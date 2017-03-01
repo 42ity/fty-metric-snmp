@@ -63,8 +63,7 @@ bin_PROGRAMS += src/fty-metric-snmp
 src_fty_metric_snmp_CPPFLAGS = ${AM_CPPFLAGS}
 src_fty_metric_snmp_LDADD = ${program_libs}
 src_fty_metric_snmp_SOURCES = src/fty_metric_snmp.c
-src_fty_metric_snmp_config_DATA =
-src_fty_metric_snmp_config_DATA += src/fty-metric-snmp.cfg
+src_fty_metric_snmp_config_DATA = src/fty-metric-snmp.cfg
 src_fty_metric_snmp_configdir = $(sysconfdir)/fty-metric-snmp
 if WITH_SYSTEMD_UNITS
 systemdsystemunit_DATA += src/fty-metric-snmp.service
