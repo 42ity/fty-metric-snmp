@@ -170,8 +170,8 @@ void ftysnmp_getnext_v12 (const char* host, const char *oid, const snmp_credenti
         *resultoid = nextoid;
         *resultvalue = nextvalue;
     } else {
-        if (resultoid) free (resultoid);
-        if (resultvalue) free (resultvalue);
+        if (nextoid) free (nextoid);
+        if (nextvalue) free (nextvalue);
         *resultoid = NULL;
         *resultvalue = NULL;        
     }
