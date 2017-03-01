@@ -29,7 +29,7 @@
 %define DRAFTS no
 %endif
 Name:           fty-metric-snmp
-Version:        0.1.0
+Version:        1.0.0
 Release:        1
 Summary:        agent for getting measurements using lua and snmp
 License:        MIT

@@ -1,7 +1,7 @@
 Format: 3.0 (quilt)
 Binary: fty-metric-snmp
 Source: fty-metric-snmp
-Version: 0.1.0
+Version: 1.0.0
 Maintainer: fty-metric-snmp Developers <email@hostname.com>
 Architecture: any
 Build-Depends: debhelper (>= 9),
