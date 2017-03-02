@@ -205,7 +205,7 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
 {
     int result = 0;
     char *locator = NULL;
-    char *key;
+    char *key = NULL;
 
     const char *token = vsjson_next_token (self);
     while (token) {
