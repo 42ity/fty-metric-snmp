@@ -57,6 +57,7 @@ rule_tester (
     }
     if (luaL_dostring (lua, rule_evaluation (rule)) != 0) {
         puts ("Error: lua syntax error");
+        lua_error (lua);
         result = 3;
         goto cleanup;
     }
