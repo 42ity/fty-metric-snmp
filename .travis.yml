@@ -10,6 +10,9 @@ cache: ccache
 os:
 - linux
 
+services:
+- docker
+
 sudo: false
 
 # Set CI_TIME=true to enable build-step profiling in Travis
