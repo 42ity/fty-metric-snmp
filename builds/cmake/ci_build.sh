@@ -78,7 +78,7 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libzmq3-dev >/
 fi
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libczmq-dev >/dev/null 2>&1) || \
        (command -v brew >/dev/null 2>&1 && brew ls --versions czmq >/dev/null 2>&1)); then
-    $CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/czmq.git czmq
+    $CI_TIME git clone --quiet --depth 1 -b v3.0.2 https://github.com/42ity/czmq.git czmq
     BASE_PWD=${PWD}
     cd czmq
     CCACHE_BASEDIR=${PWD}
