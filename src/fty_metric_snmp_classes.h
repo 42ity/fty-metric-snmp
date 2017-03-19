@@ -32,6 +32,34 @@
 //  External API
 #include "../include/fty_metric_snmp.h"
 
+//  Extra headers
+
+//  Opaque class structures to allow forward references
+#ifndef LUASNMP_T_DEFINED
+typedef struct _luasnmp_t luasnmp_t;
+#define LUASNMP_T_DEFINED
+#endif
+#ifndef RULE_T_DEFINED
+typedef struct _rule_t rule_t;
+#define RULE_T_DEFINED
+#endif
+#ifndef VSJSON_T_DEFINED
+typedef struct _vsjson_t vsjson_t;
+#define VSJSON_T_DEFINED
+#endif
+#ifndef HOST_ACTOR_T_DEFINED
+typedef struct _host_actor_t host_actor_t;
+#define HOST_ACTOR_T_DEFINED
+#endif
+#ifndef FTYSNMP_T_DEFINED
+typedef struct _ftysnmp_t ftysnmp_t;
+#define FTYSNMP_T_DEFINED
+#endif
+#ifndef CREDENTIALS_T_DEFINED
+typedef struct _credentials_t credentials_t;
+#define CREDENTIALS_T_DEFINED
+#endif
+
 //  Internal API
 #include "luasnmp.h"
 #include "rule.h"
