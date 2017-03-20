@@ -45,7 +45,7 @@ rule_tester (
         puts ("Rule not specified!");
         return 1;
     }
-    
+
     int result = 0;
     int returnedvalues = 0;
     rule_t *rule = rule_new ();

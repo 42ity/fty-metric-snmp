@@ -47,10 +47,10 @@ fty_metric_snmp_server_new (void)
 {
     fty_metric_snmp_server_t *self = (fty_metric_snmp_server_t *) zmalloc (sizeof (fty_metric_snmp_server_t));
     assert (self);
-    
+
     self->mlm = mlm_client_new();
     assert (self->mlm);
-    
+
     self->rules = zlist_new();
     assert (self->rules);
 
@@ -109,7 +109,7 @@ fty_metric_snmp_server_load_rules (fty_metric_snmp_server_t *self, const char *p
 {
     if (!self || !path) return;
     char fullpath [PATH_MAX];
-    
+
     DIR *dir = opendir(path);
     if (!dir) return;
 
@@ -142,10 +142,10 @@ int
 is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
 {
     if (!rule || !ftymsg) return 0;
-    
+
     char *asset = (char *)fty_proto_name (ftymsg);
     if (zlist_exists (rule_assets(rule), asset)) return 1;
-    
+
     zhash_t *ext = fty_proto_ext (ftymsg);
     zlist_t *keys = zhash_keys (ext);
     char *key = (char *)zlist_first (keys);
@@ -166,7 +166,7 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
     model = fty_proto_ext_string (ftymsg, "device.part", NULL);
     if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
-    
+
     return 0;
 }
 
@@ -179,7 +179,7 @@ fty_metric_snmp_server_detect_credentials (fty_metric_snmp_server_t *self, const
     const snmp_credentials_t *cr = credentials_first (self->credentials);
     const char *startoid = ".1";
     char *oid, *value;
-    
+
     while (cr) {
         ftysnmp_getnext (
             ip,
@@ -222,10 +222,10 @@ zactor_t *
 fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftymsg, zsock_t *pipe)
 {
     if (!self || !ftymsg) return NULL;
-    
+
     const char *operation = fty_proto_operation (ftymsg);
     const char *assetname = fty_proto_name (ftymsg);
-    
+
     if (streq (operation, "delete")) {
         if (zhash_lookup (self->host_actors, assetname)) {
             zhash_delete (self->host_actors, assetname);
@@ -468,7 +468,7 @@ fty_metric_snmp_server_test (bool verbose)
         "}";
     zstr_sendx (server, "RULE", rule, NULL);
     zclock_sleep (1000);
-    
+
     mlm_client_t *asset = mlm_client_new ();
     mlm_client_connect (asset, endpoint, 5000, "asset-autoupdate");
     mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
@@ -500,7 +500,7 @@ fty_metric_snmp_server_test (bool verbose)
     zhash_destroy (&ext);
     mlm_client_send (asset, "myasset", &assetmsg);
     zmsg_destroy (&assetmsg);
-    
+
     zclock_sleep (1000);
 
     zstr_send (server, "WAKEUP");

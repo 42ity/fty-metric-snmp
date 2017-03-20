@@ -81,7 +81,7 @@ void pf_set_polling (polling_function_t *self, unsigned int polling)
 void pf_set_lua (polling_function_t *self, lua_State **lua)
 {
     if (!self) return;
-    
+
     if (self->lua) luasnmp_destroy (&self -> lua);
     self -> lua = *lua;
     *lua = NULL;
@@ -102,7 +102,7 @@ lua_State *pf_lua (polling_function_t *self)
 void pf_freefn (void *self)
 {
     if (!self) return;
-    polling_function_t *pf = (polling_function_t *)self; 
+    polling_function_t *pf = (polling_function_t *)self;
     pf_destroy (&pf);
 }
 
@@ -166,7 +166,7 @@ void host_actor_remove_functions (host_actor_t *self)
 void host_actor_set_credentials_to_lua (host_actor_t *self)
 {
     if (!self) return;
-    
+
     polling_function_t *pf = (polling_function_t *) zhash_first (self->functions);
     while (pf) {
         lua_State *l = pf_lua (pf);
@@ -186,7 +186,7 @@ void host_actor_set_credentials_to_lua (host_actor_t *self)
 void host_actor_add_lua_function (host_actor_t *self, const char *name, const char *func, unsigned int polling)
 {
     if (!self) return;
-    
+
     zsys_debug ("adding lua func");
     lua_State *l = luasnmp_new ();
     if (luaL_dostring (l, func) != 0) {
@@ -211,7 +211,7 @@ void host_actor_add_lua_function (host_actor_t *self, const char *name, const ch
     polling_function_t *pf = pf_new ();
     pf_set_polling (pf, polling);
     pf_set_lua (pf, &l);
-    
+
     zhash_insert (self -> functions, name, pf);
     zhash_freefn (self -> functions, name, pf_freefn);
     zsys_debug ("New function '%s' created", name);
@@ -285,7 +285,7 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
         zsock_signal (pipe, -1);
         return;
     }
-    
+
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
         zmsg_t *msg = zmsg_recv (pipe);

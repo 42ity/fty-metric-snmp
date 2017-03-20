@@ -64,7 +64,7 @@ void
 credentials_set (credentials_t *self, int version, const char*community)
 {
     if (!self || !community) return;
-    
+
     snmp_credentials_t *sc = (snmp_credentials_t *)malloc (sizeof (snmp_credentials_t));
     assert(sc);
     sc->version = version;
@@ -98,7 +98,7 @@ credentials_load (credentials_t *self, char *path)
 {
     zconfig_t *cfg = zconfig_load (path);
     if (!cfg) return;
-    
+
     zconfig_t *item = zconfig_locate (cfg, "snmp/community");
     if (item) {
         zconfig_t *child = zconfig_child (item);

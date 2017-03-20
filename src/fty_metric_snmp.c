@@ -48,7 +48,7 @@ int main (int argc, char *argv [])
     for (argn = 1; argn < argc; argn++) {
         const char *param = NULL;
         if (argn < argc - 1) param = argv [argn+1];
-        
+
         if (streq (argv [argn], "--help") ||  streq (argv [argn], "-h")) {
             puts ("fty-metric-snmp [options] ...");
             puts ("  --verbose / -v         verbose test output");
@@ -106,16 +106,16 @@ int main (int argc, char *argv [])
         zstr_sendx (server, "TTL", ttl, NULL);
         zstr_free (&ttl);
     }
-    
+
     zloop_t *wakeup = zloop_new();
     zloop_timer (wakeup, POLLING * 1000, 0, s_wakeup_event, server);
     zloop_start (wakeup);
-    
+
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);
         zmsg_destroy (&msg);
     }
-    
+
     zloop_destroy (&wakeup);
     zactor_destroy (&server);
     if (verbose)

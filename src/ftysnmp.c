@@ -69,7 +69,7 @@ int snmp_enum_to_version (int version)
 char *oid_to_sring (myoid anOID[], int len)
 {
     char buffer[1024];
-    
+
     netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_OID_OUTPUT_FORMAT, NETSNMP_OID_OUTPUT_NUMERIC);
     memset (buffer, 0, sizeof (buffer));
     if(snprint_objid(buffer, sizeof(buffer)-1, anOID, len) == -1) return NULL;
@@ -99,7 +99,7 @@ char* ftysnmp_get_v12 (const char* host, const char *oid, const snmp_credentials
     char *result = NULL;
     myoid anOID[MAX_OID_LEN];
     size_t anOID_len = MAX_OID_LEN;
-    
+
     struct variable_list *vars;
     int status;
 
@@ -108,16 +108,16 @@ char* ftysnmp_get_v12 (const char* host, const char *oid, const snmp_credentials
     session.version = snmp_version_to_enum (credentials->version);
     session.community = (unsigned char *) credentials->community;
     session.community_len = strlen (credentials->community);
-   
+
     ss = snmp_open (&session);
     if (!ss) return NULL;
-    
+
     pdu = snmp_pdu_create (SNMP_MSG_GET);
     read_objid (oid, anOID, &anOID_len);
     snmp_add_null_var(pdu, anOID, anOID_len);
-   
+
     status = snmp_synch_response (ss, pdu, &response);
-   
+
     if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR) {
         vars = response->variables;
         result = var_to_sring (vars);
@@ -138,30 +138,30 @@ void ftysnmp_getnext_v12 (const char* host, const char *oid, const snmp_credenti
     unsigned long int anOID[MAX_OID_LEN];
     size_t anOID_len = MAX_OID_LEN;
     char *nextoid = NULL;
-    char *nextvalue = NULL; 
+    char *nextvalue = NULL;
     struct variable_list *vars;
     int status;
 
     *resultoid = NULL;
-    *resultvalue = NULL;        
+    *resultvalue = NULL;
 
     snmp_sess_init (&session);
     session.peername = (char *)host;
     session.version = snmp_version_to_enum (credentials->version);
     session.community = (unsigned char *) credentials->community;
     session.community_len = strlen (credentials->community);
-   
+
     ss = snmp_open (&session);
     if (!ss) return;
-    
+
     pdu = snmp_pdu_create (SNMP_MSG_GETNEXT);
     read_objid (oid, anOID, &anOID_len);
     snmp_add_null_var(pdu, anOID, anOID_len);
-   
+
     status = snmp_synch_response (ss, pdu, &response);
-   
+
     if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR) {
-        
+
         vars = response->variables; // we should have just one variable
         nextoid = oid_to_sring (vars->name, vars->name_length);
         nextvalue = var_to_sring (vars);
@@ -173,7 +173,7 @@ void ftysnmp_getnext_v12 (const char* host, const char *oid, const snmp_credenti
         if (nextoid) free (nextoid);
         if (nextvalue) free (nextvalue);
         *resultoid = NULL;
-        *resultvalue = NULL;        
+        *resultvalue = NULL;
     }
     if (response) snmp_free_pdu (response);
     snmp_close(ss);
@@ -216,6 +216,6 @@ void ftysnmp_getnext (const char* host, const char *oid, const snmp_credentials_
 
 void ftysnmp_test (bool verbose)
 {
-    //@ test is empty 
+    //@ test is empty
 }
 

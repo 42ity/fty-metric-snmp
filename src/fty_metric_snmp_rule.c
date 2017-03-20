@@ -21,7 +21,7 @@
 
 /*
 @header
-    fty_metric_snmp_rule - 
+    fty_metric_snmp_rule -
 @discuss
 @end
 */
@@ -35,7 +35,7 @@ int main (int argc, char *argv [])
     int snmpversion = 1;
     const char *community = "public";
     const char *host = "localhost";
-    
+
     for (argn = 1; argn < argc; argn++) {
         char *param = NULL;
         if (argn < argc - 1) param = argv [argn + 1];

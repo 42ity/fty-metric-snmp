@@ -68,9 +68,9 @@ rule_new (void)
 int rule_json_callback (const char *locator, const char *value, void *data)
 {
     if (!data) return 1;
-    
+
     rule_t *self = (rule_t *) data;
-    
+
     if (streq (locator, "name")) {
         self -> name = vsjson_decode_string (value);
     }
