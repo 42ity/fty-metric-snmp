@@ -11,7 +11,7 @@ Installation model
 
 <install>
     <item type = "systemd-tmpfiles" />
-    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../rules/linuxdisk.rule" />
-    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../rules/linuxload.rule" />
-    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../rules/nagios-plugin-style.rule" />
+    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../src/selftest-ro/rules/linuxdisk.rule" />
+    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../src/selftest-ro/rules/linuxload.rule" />
+    <item path = "/var/lib/fty/fty-metric-snmp/rules" name = "../src/selftest-ro/rules/nagios-plugin-style.rule" />
 </install>
