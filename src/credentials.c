@@ -134,11 +134,25 @@ credentials_test (bool verbose)
 {
     printf (" * credentials: ");
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
     //  @selftest
     //  Simple create/destroy/load test
     credentials_t *self = credentials_new ();
     assert (self);
-    credentials_load (self, "rules/communities.cfg");
+    char *cfg_file = zsys_sprintf ("%s/rules/communities.cfg", SELFTEST_DIR_RO);
+    assert (cfg_file);
+    credentials_load (self, cfg_file);
+    zstr_free (&cfg_file);
     const snmp_credentials_t *cr = credentials_first (self);
     int cnt = 0;
     while (cr) {
