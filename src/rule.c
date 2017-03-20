@@ -233,11 +233,25 @@ rule_test (bool verbose)
 {
     printf (" * rule: ");
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
     //  @selftest
     //  Simple create/destroy test
     rule_t *self = rule_new ();
     assert (self);
-    rule_load (self, "rules/linuxload.rule");
+    char * rule_file = zsys_sprintf ("%s/rules/linuxload.rule", SELFTEST_DIR_RO);
+    assert (rule_file != NULL);
+    rule_load (self, rule_file);
+    zstr_free (&rule_file);
     rule_destroy (&self);
     //  @end
     printf ("OK\n");
