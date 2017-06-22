@@ -31,6 +31,9 @@ src/fty_metric_snmp_selftest
 core
 
  # Distcheck workspace and archives
+fty-metric-snmp-1.0.0/
+fty-metric-snmp-1.0.0.tar.gz
+fty-metric-snmp-1.0.0.zip
 fty-metric-snmp-0.1.0/
 fty-metric-snmp-0.1.0.tar.gz
 fty-metric-snmp-0.1.0.zip
@@ -54,6 +57,7 @@ config.log
 config.status
 config/
 configure
+configure.lineno
 libtool
 src/platform.h
 src/platform.h.in

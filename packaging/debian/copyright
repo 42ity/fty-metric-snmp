@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: fty-metric-snmp
 
 Files: *
-Copyright: 2015- fty-metric-snmp Developers <email@hostname.com>
+Copyright: 2015- fty-metric-snmp Developers <eatonipcopensource@eaton.com>
 License: fty-metric-snmp_license
  Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                         
