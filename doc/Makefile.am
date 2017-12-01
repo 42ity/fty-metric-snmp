@@ -81,7 +81,7 @@ fty-metric-snmp-rule.txt: $(top_srcdir)/src/fty_metric_snmp_rule.c
 	"$(srcdir)/mkman" "fty_metric_snmp_rule" "$(builddir)/fty-metric-snmp-rule.txt" "$(srcdir)/.."
 
 
-clean:
+clean-local:
 	rm -f *.1 *.3 *.7 $(GENERATED_DOCS)
 
 doc: $(GENERATED_DOCS)
