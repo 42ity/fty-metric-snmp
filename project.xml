@@ -16,12 +16,10 @@
         <option name = "triggers_pollSCM" value = "H/2 * * * *" />
         <option name = "test_cppcheck" value = "1" />
         <option name = "build_docs" value = "1" />
-        <option name = "check_sequential" value = "1" />
     </target>
 
     <include filename = "license.xml" />
     <version major = "1" minor = "0" patch = "0" />
-
 
     <use project = "czmq"
         repository="https://github.com/42ity/czmq.git" release = "release/IPM_Infra-1.3"
