@@ -50,6 +50,7 @@ BuildRequires:  systemd-devel
 BuildRequires:  systemd
 %{?systemd_requires}
 BuildRequires:  xmlto
+BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
@@ -79,6 +80,7 @@ This package contains shared library for fty-metric-snmp: agent for getting meas
 Summary:        agent for getting measurements using lua and snmp
 Group:          System/Libraries
 Requires:       libfty_metric_snmp0 = %{version}
+Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
