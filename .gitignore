@@ -33,13 +33,10 @@ src/fty_metric_snmp_selftest
 *.app
 core
 
- # Distcheck workspace and archives
-fty-metric-snmp-1.0.0/
-fty-metric-snmp-1.0.0.tar.gz
-fty-metric-snmp-1.0.0.zip
-fty-metric-snmp-0.1.0/
-fty-metric-snmp-0.1.0.tar.gz
-fty-metric-snmp-0.1.0.zip
+# Distcheck workspace and archives
+fty-metric-snmp-*/
+fty-metric-snmp-*.tar.gz
+fty-metric-snmp-*.zip
 
 # Man pages
 doc/*.1
@@ -78,7 +75,6 @@ compile_commands.json
 DartConfiguration.tcl
 install_manifest.txt
 Testing/
-CMakeLists.txt
 
 # CMake in general
 builds/cmake/
@@ -86,6 +82,7 @@ CMake*
 *.cmake
 
 # Repositories downloaded by CI integration scripts
+libsodium/
 libzmq/
 czmq/
 malamute/
@@ -118,7 +115,7 @@ src/app/gen/
 src/app/obj/
 src/app/local.properties
 
-# Android -dependencies
+# Android - dependencies
 src/app/jni/output
 
 # Python build directory
@@ -139,6 +136,9 @@ bindings/qt/selftest/selftest
 *.swp
 *.bak
 .test*
+
+# Netbeans directory
+nbproject/
 
 # editor backups
 *~

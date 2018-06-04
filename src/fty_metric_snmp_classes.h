@@ -2,6 +2,7 @@
     fty_metric_snmp_classes - private header file
 
     Copyright (C) 2016 - 2017 Tomas Halman
+    Copyright (C) 2017 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,7 +105,7 @@ FTY_METRIC_SNMP_PRIVATE void
 
 //  Self test for private classes
 FTY_METRIC_SNMP_PRIVATE void
-    fty_metric_snmp_private_selftest (bool verbose);
+    fty_metric_snmp_private_selftest (bool verbose, const char *subtest);
 
 #endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 
