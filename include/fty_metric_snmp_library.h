@@ -2,6 +2,7 @@
     fty-metric-snmp - generated layer of public API
 
     Copyright (C) 2016 - 2017 Tomas Halman
+    Copyright (C) 2017 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,11 +66,12 @@
 #   define FTY_METRIC_SNMP_EXPORT
 #   define FTY_METRIC_SNMP_PRIVATE
 #else
-#   define FTY_METRIC_SNMP_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #       define FTY_METRIC_SNMP_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define FTY_METRIC_SNMP_EXPORT __attribute__ ((visibility ("default")))
 #   else
 #       define FTY_METRIC_SNMP_PRIVATE
+#       define FTY_METRIC_SNMP_EXPORT
 #   endif
 #endif
 
@@ -86,9 +88,18 @@ typedef struct _rule_tester_t rule_tester_t;
 #include "rule_tester.h"
 
 #ifdef FTY_METRIC_SNMP_BUILD_DRAFT_API
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //  Self test for private classes
 FTY_METRIC_SNMP_EXPORT void
-    fty_metric_snmp_private_selftest (bool verbose);
+    fty_metric_snmp_private_selftest (bool verbose, const char *subtest);
+
+#ifdef __cplusplus
+}
+#endif
 #endif // FTY_METRIC_SNMP_BUILD_DRAFT_API
 
 #endif

@@ -2,6 +2,7 @@
 #    fty-metric-snmp - agent for getting measurements using LUA and SNMP
 #
 #    Copyright (C) 2016 - 2017 Tomas Halman
+#    Copyright (C) 2017 - 2018 Eaton
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

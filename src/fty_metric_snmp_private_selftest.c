@@ -5,6 +5,7 @@
 
     -------------------------------------------------------------------------
     Copyright (C) 2016 - 2017 Tomas Halman
+    Copyright (C) 2017 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,15 +36,21 @@
 //
 
 void
-fty_metric_snmp_private_selftest (bool verbose)
+fty_metric_snmp_private_selftest (bool verbose, const char *subtest)
 {
 // Tests for stable private classes:
-    luasnmp_test (verbose);
-    rule_test (verbose);
-    vsjson_test (verbose);
-    host_actor_test (verbose);
-    ftysnmp_test (verbose);
-    credentials_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "luasnmp_test"))
+        luasnmp_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "rule_test"))
+        rule_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "vsjson_test"))
+        vsjson_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "host_actor_test"))
+        host_actor_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "ftysnmp_test"))
+        ftysnmp_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "credentials_test"))
+        credentials_test (verbose);
 }
 /*
 ################################################################################
