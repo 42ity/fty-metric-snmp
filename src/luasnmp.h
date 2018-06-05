@@ -1,5 +1,6 @@
 /*  =========================================================================
     luasnmp - lua snmp extension
+    Note: This file was manually amended, see below
 
     Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
@@ -38,7 +39,8 @@ FTY_METRIC_SNMP_EXPORT void
     luasnmp_destroy (lua_State **self_p);
 
 //  Self test of this class
-FTY_METRIC_SNMP_EXPORT void
+//  Note: keep this definition in sync with fty_metric_snmp_classes.h
+FTY_METRIC_SNMP_PRIVATE void
     luasnmp_test (bool verbose);
 
 //  @end
