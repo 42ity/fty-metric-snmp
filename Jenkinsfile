@@ -110,7 +110,7 @@ pipeline {
             description: 'The clang-format program (v5+) to use for this build, e.g. clang-format-5.0; an empty value means configure-time guesswork',
             name: 'CLANG_FORMAT')
         string (
-            defaultValue: "10",
+            defaultValue: "30",
             description: 'When running tests, use this timeout (in minutes; be sure to leave enough for double-job of a distcheck too)',
             name: 'USE_TEST_TIMEOUT')
         booleanParam (
@@ -125,6 +125,10 @@ pipeline {
             defaultValue: true,
             description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done successfully?',
             name: 'DO_CLEANUP_AFTER_JOB')
+        booleanParam (
+            defaultValue: false,
+            description: 'When using temporary subdirs in build/test workspaces, wipe them after the whole job is done unsuccessfully (failed)? Note this would not allow postmortems on CI server, but would conserve its disk space.',
+            name: 'DO_CLEANUP_AFTER_FAILED_JOB')
     }
     triggers {
         pollSCM 'H/2 * * * *'
@@ -562,6 +566,16 @@ pipeline {
             sleep 1
             //slackSend (color: "#AA0000", message: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result} (<${env.BUILD_URL}|Open>)")
             //emailext (to: "qa@example.com", subject: "Build ${env.JOB_NAME} failed!", body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} ${currentBuild.result}\nSee ${env.BUILD_URL}")
+
+            dir("tmp") {
+                script {
+                    if ( params.DO_CLEANUP_AFTER_FAILED_JOB ) {
+                        deleteDir()
+                    } else {
+                        sh """ echo "NOTE: BUILD AREA OF WORKSPACE `pwd` REMAINS FOR POST-MORTEMS ON `hostname` AND CONSUMES `du -hs . | awk '{print \$1}'` !" """
+                    }
+                }
+            }
         }
     }
 }

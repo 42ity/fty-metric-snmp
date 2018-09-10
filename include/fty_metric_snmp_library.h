@@ -33,6 +33,7 @@
 //  External dependencies
 #include <czmq.h>
 #include <malamute.h>
+#include <fty_log.h>
 #include <ftyproto.h>
 #include <lua.h>
 #include <net-snmp/net-snmp-config.h>
