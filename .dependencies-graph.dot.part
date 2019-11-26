@@ -1,0 +1,6 @@
+   fty-metric-snmp -> libsodium;
+   fty-metric-snmp -> libzmq;
+   fty-metric-snmp -> czmq;
+   fty-metric-snmp -> malamute;
+   fty-metric-snmp -> fty-common-logging;
+   fty-metric-snmp -> fty-proto;
