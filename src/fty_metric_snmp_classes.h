@@ -33,8 +33,6 @@
 //  External API
 #include "../include/fty_metric_snmp.h"
 
-//  Extra headers
-
 //  Opaque class structures to allow forward references
 #ifndef LUASNMP_T_DEFINED
 typedef struct _luasnmp_t luasnmp_t;
@@ -60,6 +58,8 @@ typedef struct _ftysnmp_t ftysnmp_t;
 typedef struct _credentials_t credentials_t;
 #define CREDENTIALS_T_DEFINED
 #endif
+
+//  Extra headers
 
 //  Internal API
 
