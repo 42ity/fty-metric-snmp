@@ -1,21 +1,21 @@
 /*  =========================================================================
     fty_metric_snmp_server - Main actor
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -246,7 +246,7 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
             if (is_rule_for_this_asset (rule, ftymsg)) {
                 haverule = true;
                 if (!host) {
-                    zsys_debug ("deploying actor for %s", assetname);
+                    log_debug ("deploying actor for %s", assetname);
                     host = zactor_new(host_actor, NULL);
                     assert (host);
                     zhash_insert (self->host_actors, assetname, host);
@@ -254,13 +254,13 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
                     zstr_sendx (host, "ASSETNAME", assetname, NULL);
                     fty_metric_snmp_server_update_poller (self, pipe);
                 }
-                zsys_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
+                log_debug ("function '%s' send to '%s' actor", rule_name (rule), assetname);
                 zstr_sendx (host, "LUA", rule_name (rule), rule_evaluation (rule), NULL);
             }
             rule = (rule_t *)zlist_next (self->rules);
         }
         if (!haverule) {
-            zsys_debug ("no rule for %s", assetname);
+            log_debug ("no rule for %s", assetname);
             if (host) {
                 zactor_destroy (&host);
                 fty_metric_snmp_server_update_poller (self, pipe);
@@ -274,7 +274,7 @@ fty_metric_snmp_server_asset (fty_metric_snmp_server_t *self, fty_proto_t *ftyms
             zstr_sendx (host, "CREDENTIALS", versionstr, cr->community, NULL);
             zstr_free (&versionstr);
         } else {
-            zsys_error ("Can't detect SNMP credentials for %s", assetname);
+            log_error ("Can't detect SNMP credentials for %s", assetname);
             zstr_sendx (host, "CREDENTIALS", "0", "", NULL);
         }
         return host;
@@ -298,7 +298,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
             zmsg_t *msg = zmsg_recv (pipe);
             if (msg) {
                 char *cmd = zmsg_popstr (msg);
-                zsys_debug ("pipe command %s", cmd);
+                log_debug ("pipe command %s", cmd);
                 if (cmd) {
                     if (streq (cmd, "$TERM")) {
                         zstr_free (&cmd);
@@ -377,7 +377,7 @@ fty_metric_snmp_server_actor_main_loop (fty_metric_snmp_server_t *self, zsock_t 
         }
         else if (which != NULL) {
             // must be host_actor then
-            zsys_debug ("got host actor message");
+            log_debug ("got host actor message");
             zmsg_t *msg = zmsg_recv (which);
             char *cmd = zmsg_popstr (msg);
             if (cmd && streq (cmd, "METRIC")) {
