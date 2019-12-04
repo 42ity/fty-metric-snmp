@@ -1,21 +1,21 @@
 /*  =========================================================================
     host_actor - Actor testing one host
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -187,16 +187,16 @@ void host_actor_add_lua_function (host_actor_t *self, const char *name, const ch
 {
     if (!self) return;
 
-    zsys_debug ("adding lua func");
+    log_debug ("adding lua func");
     lua_State *l = luasnmp_new ();
     if (luaL_dostring (l, func) != 0) {
-        zsys_error ("rule %s has an error", name);
+        log_error ("rule %s has an error", name);
         luasnmp_destroy (&l);
         return;
     }
     lua_getglobal (l, "main");
     if (!lua_isfunction (l, -1)) {
-        zsys_error ("main function not found in rule %s", name);
+        log_error ("main function not found in rule %s", name);
         luasnmp_destroy (&l);
         return;
     }
@@ -214,7 +214,7 @@ void host_actor_add_lua_function (host_actor_t *self, const char *name, const ch
 
     zhash_insert (self -> functions, name, pf);
     zhash_freefn (self -> functions, name, pf_freefn);
-    zsys_debug ("New function '%s' created", name);
+    log_debug ("New function '%s' created", name);
 }
 
 //  --------------------------------------------------------------------------
@@ -229,11 +229,11 @@ void host_actor_evaluate (polling_function_t *pf, const char *name, const char *
     lua_getglobal (l, "main");
     lua_pushstring (l, ip);
 
-    zsys_debug ("lua called for %s", name);
+    log_debug ("lua called for %s", name);
     if (lua_pcall(l, 1, 1, 0) == 0) {
         // check if result is an array
         if (! lua_istable (l, -1)) {
-            zsys_error ("function did not returned array");
+            log_error ("function did not returned array");
             return;
         }
         char *pollfreq = zsys_sprintf("%i", pf_polling (pf));
@@ -265,7 +265,7 @@ void host_actor_evaluate (polling_function_t *pf, const char *name, const char *
             lua_pop (l, 1);
 
             if (type && value && units) {
-                zsys_debug ("sending METRIC/%s/%s/%s/%s/%s/%s", name, type, value, units, pollfreq, description);
+                log_debug ("sending METRIC/%s/%s/%s/%s/%s/%s", name, type, value, units, pollfreq, description);
                 zstr_sendx (pipe, "METRIC", name, type, value, units, pollfreq, description, NULL);
             } else {
                 break;
@@ -298,10 +298,10 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                     break; //goto cleanup;
                 }
                 else if (streq (cmd, "WAKEUP")) {
-                    zsys_debug ("actor for '%s' received WAKEUP command, (%s)", self->asset, self->ip);
+                    log_debug ("actor for '%s' received WAKEUP command, (%s)", self->asset, self->ip);
                     if (self->ip) {
                         polling_function_t *pf = (polling_function_t *) zhash_first (self->functions);
-                        if (!pf) zsys_error ("asset '%s' has no defined function", self->asset);
+                        if (!pf) log_error ("asset '%s' has no defined function", self->asset);
                         while(pf) {
                             if (self -> counter % pf_polling (pf) == 0) {
                                 host_actor_evaluate (pf, self->asset, self->ip, pipe);
@@ -310,7 +310,7 @@ host_actor_main_loop (host_actor_t *self, zsock_t *pipe)
                         }
                     }
                     ++ self -> counter;
-                    zsys_debug ("counter: %i", self->counter);
+                    log_debug ("counter: %i", self->counter);
                 }
                 else if (streq (cmd, "LUA")) {
                     char *name = zmsg_popstr (msg);

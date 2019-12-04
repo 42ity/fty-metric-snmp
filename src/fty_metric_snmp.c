@@ -1,21 +1,21 @@
 /*  =========================================================================
     fty_metric_snmp - agent for getting measurements using LUA and SNMP
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -28,7 +28,7 @@
 
 #include "fty_metric_snmp_classes.h"
 
-static const char *ACTOR_NAME = "fty-metric-smtp";
+static const char *ACTOR_NAME = "fty-metric-snmp";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *RULES_DIR = "./rules";
 static const char *SNMP_CONFIG_FILE = "/etc/sysconfig/fty.cfg";
@@ -43,6 +43,8 @@ s_wakeup_event (zloop_t *loop, int timer_id, void *output)
 
 int main (int argc, char *argv [])
 {
+    ftylog_setInstance(ACTOR_NAME, FTY_COMMON_LOGGING_DEFAULT_CFG);
+
     bool verbose = false;
     int argn;
     for (argn = 1; argn < argc; argn++) {
@@ -75,7 +77,7 @@ int main (int argc, char *argv [])
                 errno = 0;
                 long int i = strtol (param, NULL, 10);
                 if (errno) {
-                    zsys_error ("Invalid polling interval %s", param);
+                    log_error ("Invalid polling interval %s", param);
                 } else {
                     POLLING = i;
                 }
@@ -87,12 +89,16 @@ int main (int argc, char *argv [])
             ++argn;
         }
         else {
-            printf ("Unknown option: %s\n", argv [argn]);
+            log_error ("Unknown option: %s\n", argv [argn]);
             return 1;
         }
     }
+
     if (verbose)
-        zsys_info ("fty_metric_snmp - started");
+        ftylog_setVeboseMode(ftylog_getInstance());
+
+    log_info ("%s - started", ACTOR_NAME);
+
     zactor_t *server = zactor_new (fty_metric_snmp_server_actor, NULL);
     assert (server);
     zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
@@ -118,7 +124,7 @@ int main (int argc, char *argv [])
 
     zloop_destroy (&wakeup);
     zactor_destroy (&server);
-    if (verbose)
-        zsys_info ("fty_metric_snmp - exited");
+    log_info ("%s - exited", ACTOR_NAME);
+
     return 0;
 }
